@@ -13,6 +13,7 @@ const App: React.FC = () => {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [rawResponse, setRawResponse] = useState<any>(null);
   const [showDebugPanel, setShowDebugPanel] = useState<boolean>(false);
+  const [showDataPanel, setShowDataPanel] = useState<boolean>(false);
 
   const arangoService = new ArangoService();
 
@@ -123,6 +124,13 @@ const App: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
+                    onClick={() => setShowDataPanel(!showDataPanel)}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50"
+                  >
+                    {showDataPanel ? 'Hide' : 'Show'} Data
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setShowDebugPanel(!showDebugPanel)}
                     className="rounded-lg px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50"
                   >
@@ -133,6 +141,65 @@ const App: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {showDataPanel && (
+                <div className="border-t border-slate-200/60 px-4 py-3">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-2">Current Items</h3>
+                  <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto max-h-80">
+                      <table className="w-full text-xs">
+                        <thead className="bg-slate-50 sticky top-0">
+                          <tr>
+                            <th className="px-3 py-2 text-left font-semibold text-slate-700 border-b border-slate-200">ID</th>
+                            <th className="px-3 py-2 text-left font-semibold text-slate-700 border-b border-slate-200">Type</th>
+                            <th className="px-3 py-2 text-left font-semibold text-slate-700 border-b border-slate-200">Label</th>
+                            <th className="px-3 py-2 text-left font-semibold text-slate-700 border-b border-slate-200">Properties</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {nodes.length > 0 ? (
+                            nodes.map((node) => (
+                              <tr
+                                key={node.id}
+                                className={`hover:bg-slate-50 border-b border-slate-100 cursor-pointer ${selectedNode?.id === node.id ? 'bg-slate-100' : ''}`}
+                                onClick={() => setSelectedNode(node)}
+                              >
+                                <td className="px-3 py-2 text-slate-900 font-mono">{node.id}</td>
+                                <td className="px-3 py-2 text-slate-600">
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-slate-100 border border-slate-200">
+                                    {node.type}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2 text-slate-900">{node.label}</td>
+                                <td className="px-3 py-2 text-slate-600">
+                                  <div className="flex flex-wrap gap-1">
+                                    {Object.entries(node.properties).slice(0, 3).map(([key, value]) => (
+                                      <span key={`${node.id}-${key}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-slate-100 border border-slate-200">
+                                        {key}: {JSON.stringify(value).slice(0, 20)}
+                                      </span>
+                                    ))}
+                                    {Object.keys(node.properties).length > 3 && (
+                                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-slate-100 border border-slate-200">
+                                        +{Object.keys(node.properties).length - 3} more
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={4} className="px-3 py-4 text-center text-slate-500">
+                                No nodes in current result
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {showDebugPanel && rawResponse && (
                 <div className="border-t border-slate-200/60 px-4 py-3">

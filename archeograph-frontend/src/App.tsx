@@ -11,6 +11,8 @@ const App: React.FC = () => {
   const [error, setError] = useState<QueryError | null>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [rawResponse, setRawResponse] = useState<any>(null);
+  const [showDebugPanel, setShowDebugPanel] = useState<boolean>(false);
 
   const arangoService = new ArangoService();
 
@@ -47,6 +49,7 @@ const App: React.FC = () => {
       const result = await arangoService.queryGraph(query);
       setNodes(result.nodes || []);
       setEdges(result.edges || []);
+      setRawResponse(result.raw);
       return result;
     } catch (err) {
       setError(err as QueryError);
@@ -106,6 +109,41 @@ const App: React.FC = () => {
           </section>
 
           <section className="lg:col-span-8">
+            <div className="rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur shadow-sm mb-4">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-200/60 px-5 py-4">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-900">
+                    Knowledge Graph
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Pan/zoom with mouse, use navigation buttons, click node for details.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowDebugPanel(!showDebugPanel)}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50"
+                  >
+                    {showDebugPanel ? 'Hide' : 'Show'} Debug
+                  </button>
+                  <div className="hidden sm:block text-xs text-slate-500">
+                    {isLoading ? 'Updating…' : 'Ready'}
+                  </div>
+                </div>
+              </div>
+
+              {showDebugPanel && rawResponse && (
+                <div className="border-t border-slate-200/60 px-4 py-3">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-2">Raw Response Data</h3>
+                  <div className="bg-slate-800 text-slate-100 p-3 rounded-lg text-xs font-mono overflow-x-auto max-h-60">
+                    <pre>{JSON.stringify(rawResponse, null, 2)}</pre>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur shadow-sm">
               <div className="flex items-center justify-between gap-3 border-b border-slate-200/60 px-5 py-4">
                 <div>

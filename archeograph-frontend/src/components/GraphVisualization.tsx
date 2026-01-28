@@ -28,9 +28,16 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       title: `${node.type}\n${Object.entries(node.properties)
         .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
         .join('\n')}`,
-      color: getNodeColor(node.type),
+      color: {
+        background: '#000000',
+        border: '#000000',
+        highlight: {
+          background: '#333333',
+          border: '#333333',
+        },
+      },
       shape: 'dot',
-      size: 20,
+      size: 15,
     }));
 
     // Convert edges to vis format
@@ -42,10 +49,16 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
         .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
         .join('\n')}`,
       color: {
-        color: '#9ca3af',
-        highlight: '#6b7280',
+        color: '#000000',
+        highlight: '#333333',
       },
       width: 1,
+      arrows: {
+        to: {
+          enabled: true,
+          type: 'arrow',
+        },
+      },
     }));
 
     // Create network
@@ -55,22 +68,25 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       {
         nodes: {
           font: {
-            size: 12,
-            face: 'Inter',
+            size: 11,
+            face: 'Arial, sans-serif',
+            color: '#000000',
           },
           borderWidth: 1,
-          borderWidthSelected: 2,
+          borderWidthSelected: 1,
         },
         edges: {
           font: {
             size: 10,
-            face: 'Inter',
+            face: 'Arial, sans-serif',
+            color: '#000000',
           },
           smooth: {
             enabled: true,
             type: 'dynamic',
             roundness: 0.5,
           },
+          arrowStrikethrough: false,
         },
         physics: {
           enabled: true,
@@ -90,6 +106,9 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           hover: true,
           navigationButtons: true,
           keyboard: true,
+        },
+        layout: {
+          hierarchical: false,
         },
       }
     );
@@ -125,18 +144,5 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
   );
 };
 
-// Helper function to get node color based on type
-function getNodeColor(type: string): string {
-  const typeColors: Record<string, string> = {
-    'E22_HumanMadeObject': '#4f46e5', // Artifacts
-    'E53_Place': '#10b981',          // Places
-    'E39_Actor': '#f59e0b',          // People/Actors
-    'E65_Creation': '#ef4444',       // Events
-    'E31_Document': '#8b5cf6',       // Documents
-    'default': '#6b7280',            // Default color
-  };
-
-  return typeColors[type] || typeColors.default;
-}
 
 export default GraphVisualization;

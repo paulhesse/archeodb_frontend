@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import GraphVisualization from './components/GraphVisualization';
 import QueryInterface from './components/QueryInterface';
+import NodeDetailPanel from './components/NodeDetailPanel';
 import ArangoService from './services/arangoService';
 import type { GraphNode, GraphEdge, ArangoQueryResponse, QueryError } from './services/arangoService';
 
@@ -14,6 +15,7 @@ const App: React.FC = () => {
   const [rawResponse, setRawResponse] = useState<any>(null);
   const [showDebugPanel, setShowDebugPanel] = useState<boolean>(false);
   const [showDataPanel, setShowDataPanel] = useState<boolean>(false);
+  const [showNodePanel, setShowNodePanel] = useState<boolean>(true);
 
   const arangoService = new ArangoService();
 
@@ -71,12 +73,12 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
-      <header className="sticky top-0 z-10 border-b border-slate-200/60 bg-white/70 backdrop-blur">
+    <div className="min-h-screen bg-white">
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Archaeo<span className="text-indigo-600">Graph</span>
+              ArchaeoGraph
             </h1>
             <p className="text-xs text-slate-500">
               CIDOC CRM Knowledge Graph explorer
@@ -84,15 +86,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 text-xs">
-            {hoveredNode ? (
-              <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-indigo-700 ring-1 ring-inset ring-indigo-200">
-                <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                Hovering: <span className="font-mono">{hoveredNode}</span>
-              </span>
-            ) : (
-              <span className="text-slate-500">Hover a node to preview</span>
-            )}
-            <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-slate-700 ring-1 ring-inset ring-slate-200">
+            <span className="text-slate-500">
               {nodes.length} nodes • {edges.length} edges
             </span>
           </div>
@@ -100,8 +94,8 @@ const App: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <section className="lg:col-span-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <section className="lg:col-span-3">
             <QueryInterface
               onQuerySubmit={handleQuerySubmit}
               isLoading={isLoading}
@@ -109,9 +103,9 @@ const App: React.FC = () => {
             />
           </section>
 
-          <section className="lg:col-span-8">
-            <div className="rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur shadow-sm mb-4">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200/60 px-5 py-4">
+          <section className="lg:col-span-2">
+            <div className="border border-slate-200 bg-white">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
                 <div>
                   <h2 className="text-sm font-semibold text-slate-900">
                     Knowledge Graph
@@ -124,15 +118,15 @@ const App: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setShowDataPanel(!showDataPanel)}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50"
+                    onClick={() => setShowNodePanel(!showNodePanel)}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
                   >
-                    {showDataPanel ? 'Hide' : 'Show'} Data
+                    {showNodePanel ? 'Hide' : 'Show'} Node Panel
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowDebugPanel(!showDebugPanel)}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50"
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
                   >
                     {showDebugPanel ? 'Hide' : 'Show'} Debug
                   </button>
@@ -142,150 +136,45 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {showDataPanel && (
-                <div className="border-t border-slate-200/60 px-4 py-3">
-                  <h3 className="text-sm font-semibold text-slate-900 mb-2">Current Items</h3>
-                  <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-                    <div className="overflow-x-auto max-h-80">
-                      <table className="w-full text-xs">
-                        <thead className="bg-slate-50 sticky top-0">
-                          <tr>
-                            <th className="px-3 py-2 text-left font-semibold text-slate-700 border-b border-slate-200">ID</th>
-                            <th className="px-3 py-2 text-left font-semibold text-slate-700 border-b border-slate-200">Type</th>
-                            <th className="px-3 py-2 text-left font-semibold text-slate-700 border-b border-slate-200">Label</th>
-                            <th className="px-3 py-2 text-left font-semibold text-slate-700 border-b border-slate-200">Properties</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {nodes.length > 0 ? (
-                            nodes.map((node) => (
-                              <tr
-                                key={node.id}
-                                className={`hover:bg-slate-50 border-b border-slate-100 cursor-pointer ${selectedNode?.id === node.id ? 'bg-slate-100' : ''}`}
-                                onClick={() => setSelectedNode(node)}
-                              >
-                                <td className="px-3 py-2 text-slate-900 font-mono">{node.id}</td>
-                                <td className="px-3 py-2 text-slate-600">
-                                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-slate-100 border border-slate-200">
-                                    {node.type}
-                                  </span>
-                                </td>
-                                <td className="px-3 py-2 text-slate-900">{node.label}</td>
-                                <td className="px-3 py-2 text-slate-600">
-                                  <div className="flex flex-wrap gap-1">
-                                    {Object.entries(node.properties).slice(0, 3).map(([key, value]) => (
-                                      <span key={`${node.id}-${key}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-slate-100 border border-slate-200">
-                                        {key}: {JSON.stringify(value).slice(0, 20)}
-                                      </span>
-                                    ))}
-                                    {Object.keys(node.properties).length > 3 && (
-                                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-slate-100 border border-slate-200">
-                                        +{Object.keys(node.properties).length - 3} more
-                                      </span>
-                                    )}
-                                  </div>
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan={4} className="px-3 py-4 text-center text-slate-500">
-                                No nodes in current result
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+              <div className="p-4 h-[600px]">
+                {isLoading && !nodes.length && !edges.length ? (
+                  <div className="flex flex-col justify-center items-center h-full">
+                    <div className="loading-spinner" />
+                    <p className="mt-4 text-sm text-slate-600">Loading graph data…</p>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <GraphVisualization
+                    nodes={nodes}
+                    edges={edges}
+                    onNodeClick={handleNodeClick}
+                    onNodeHover={handleNodeHover}
+                  />
+                )}
+              </div>
 
               {showDebugPanel && rawResponse && (
-                <div className="border-t border-slate-200/60 px-4 py-3">
+                <div className="border-t border-slate-200 px-4 py-3">
                   <h3 className="text-sm font-semibold text-slate-900 mb-2">Raw Response Data</h3>
-                  <div className="bg-slate-800 text-slate-100 p-3 rounded-lg text-xs font-mono overflow-x-auto max-h-60">
+                  <div className="bg-slate-100 text-slate-800 p-3 rounded-lg text-xs font-mono overflow-x-auto max-h-60">
                     <pre>{JSON.stringify(rawResponse, null, 2)}</pre>
                   </div>
                 </div>
               )}
             </div>
+          </section>
 
-            <div className="rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur shadow-sm">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200/60 px-5 py-4">
-                <div>
-                  <h2 className="text-sm font-semibold text-slate-900">
-                    Knowledge Graph
-                  </h2>
-                  <p className="text-xs text-slate-500">
-                    Pan/zoom with mouse, use navigation buttons, click node for details.
-                  </p>
-                </div>
-
-                <div className="hidden sm:block text-xs text-slate-500">
-                  {isLoading ? 'Updating…' : 'Ready'}
-                </div>
-              </div>
-
-              <div className="p-4">
-                {isLoading && !nodes.length && !edges.length ? (
-                  <div className="flex flex-col justify-center items-center h-96">
-                    <div className="loading-spinner" />
-                    <p className="mt-4 text-sm text-slate-600">Loading graph data…</p>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <GraphVisualization
-                      nodes={nodes}
-                      edges={edges}
-                      onNodeClick={handleNodeClick}
-                      onNodeHover={handleNodeHover}
-                    />
-
-                    {selectedNode && (
-                      <div className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <h3 className="text-sm font-semibold text-slate-900">Node details</h3>
-                            <p className="text-xs text-slate-500">Click another node to update.</p>
-                          </div>
-                          <button
-                            onClick={() => setSelectedNode(null)}
-                            className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
-                          >
-                            Close
-                          </button>
-                        </div>
-
-                        <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2 text-sm">
-                          <div className="space-y-1">
-                            <p><span className="font-semibold">ID:</span> <span className="font-mono text-xs">{selectedNode.id}</span></p>
-                            <p><span className="font-semibold">Type:</span> {selectedNode.type}</p>
-                            <p><span className="font-semibold">Label:</span> {selectedNode.label}</p>
-                          </div>
-                          <div>
-                            <h4 className="text-xs font-semibold text-slate-700 mb-2">Properties</h4>
-                            <ul className="space-y-1 text-xs text-slate-700">
-                              {Object.entries(selectedNode.properties).map(([key, value]) => (
-                                <li key={key} className="flex gap-2">
-                                  <span className="min-w-28 font-semibold text-slate-900">{key}:</span>
-                                  <span className="font-mono text-[11px] text-slate-600 break-all">{JSON.stringify(value)}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+          <section className="lg:col-span-1">
+            <div className="border border-slate-200 bg-white h-[600px]">
+              <NodeDetailPanel
+                selectedNode={selectedNode}
+                onClose={() => setSelectedNode(null)}
+              />
             </div>
           </section>
         </div>
       </main>
 
-      <footer className="border-t border-slate-200/60 py-6">
+      <footer className="border-t border-slate-200 py-6">
         <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
           ArchaeoGraph • CIDOC CRM Knowledge Graph • © {new Date().getFullYear()}
         </div>

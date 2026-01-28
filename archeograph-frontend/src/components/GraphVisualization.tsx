@@ -29,15 +29,15 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
         .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
         .join('\n')}`,
       color: {
-        background: '#000000',
-        border: '#000000',
+        background: '#ffffff',
+        border: '#d6d9d8',
         highlight: {
           background: '#333333',
           border: '#333333',
         },
       },
       shape: 'dot',
-      size: 15,
+      size: 25,
     }));
 
     // Convert edges to vis format
@@ -49,10 +49,9 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
         .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
         .join('\n')}`,
       color: {
-        color: '#000000',
-        highlight: '#333333',
+        inherit: 'both',
       },
-      width: 1,
+      width: 0.15,
       arrows: {
         to: {
           enabled: true,
@@ -67,49 +66,30 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       { nodes: visNodes, edges: visEdges },
       {
         nodes: {
-          font: {
-            size: 11,
-            face: 'Arial, sans-serif',
-            color: '#000000',
+          shape: 'dot',
+          scaling: {
+            min: 10,
+            max: 30,
           },
-          borderWidth: 1,
-          borderWidthSelected: 1,
+          font: {
+            size: 12,
+            face: 'Tahoma',
+          },
         },
         edges: {
-          font: {
-            size: 10,
-            face: 'Arial, sans-serif',
-            color: '#000000',
-          },
+          color: { inherit: 'both' },
+          width: 0.15,
           smooth: {
             enabled: true,
-            type: 'dynamic',
+            type: 'continuous',
             roundness: 0.5,
-          },
-          arrowStrikethrough: false,
-        },
-        physics: {
-          enabled: true,
-          barnesHut: {
-            gravitationalConstant: -80000,
-            springConstant: 0.04,
-            springLength: 200,
-            avoidOverlap: 0.5,
-          },
-          stabilization: {
-            enabled: true,
-            iterations: 1000,
-            updateInterval: 50,
           },
         },
         interaction: {
-          hover: true,
-          navigationButtons: true,
-          keyboard: true,
+          hideEdgesOnDrag: true,
+          tooltipDelay: 200,
         },
-        layout: {
-          hierarchical: false,
-        },
+        physics: false,
       }
     );
 
@@ -137,12 +117,16 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
   }, [nodes, edges, onNodeClick, onNodeHover]);
 
   return (
-    <div
-      ref={containerRef}
-      className="graph-container w-full h-full"
-    />
+    <div>
+      <h2>Static smooth curves - World Cup Network</h2>
+
+      <div
+        ref={containerRef}
+        id="mynetwork"
+        style={{ width: 800, height: 800, border: '1px solid lightgray' }}
+      />
+    </div>
   );
 };
-
 
 export default GraphVisualization;

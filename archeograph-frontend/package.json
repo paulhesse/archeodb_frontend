@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cytoscape": "^3.33.1",
+    "cytoscape-cise": "^2.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "vis-network": "^10.0.2"

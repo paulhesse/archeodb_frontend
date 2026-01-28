@@ -19,8 +19,8 @@ const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      <div className="flex items-center justify-between p-3 border-b border-slate-200">
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex items-center justify-between p-3 border-b border-slate-200 bg-white">
         <h3 className="text-sm font-semibold text-slate-900">Node Details</h3>
         <button
           onClick={onClose}

@@ -17,7 +17,8 @@
 
     .graph-container {
       width: 100%;
-      height: 600px;
+      height: 50vh;
+      min-height: 400px;
       border: 1px solid #e5e5e5;
       border-radius: 8px;
       background-color: white;
@@ -29,6 +30,20 @@
       padding: 1.5rem;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      max-height: 60vh;
+      overflow: hidden;
+    }
+
+    .query-form-content {
+      max-height: 50vh;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .query-form textarea {
+      max-height: 200px;
+      min-height: 100px;
+      width: 100%;
     }
 
     .btn-primary {
@@ -76,67 +91,69 @@
       <div class="query-form max-w-4xl mx-auto mt-6">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">ArangoDB Query</h2>
 
-        <form class="space-y-4">
-          <div>
-            <label for="query" class="block text-sm font-medium text-gray-700 mb-1">
-              Enter your AQL query:
-            </label>
-            <textarea
-              id="query"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              rows="4"
-              placeholder="FOR v, e, p IN 1..2 ANY 'nodeId' GRAPH 'cidoc_graph' RETURN {nodes: [v], edges: [e]}"
-            ></textarea>
+        <div class="query-form-content">
+          <form class="space-y-4">
+            <div>
+              <label for="query" class="block text-sm font-medium text-gray-700 mb-1">
+                Enter your AQL query:
+              </label>
+              <textarea
+                id="query"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                rows="4"
+                placeholder="FOR v, e, p IN 1..2 ANY 'nodeId' GRAPH 'cidoc_graph' RETURN {nodes: [v], edges: [e]}"
+              ></textarea>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onclick="setQueryExample1()"
+                class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Example 1
+              </button>
+              <button
+                type="button"
+                onclick="setQueryExample2()"
+                class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Example 2
+              </button>
+              <button
+                type="button"
+                onclick="setQueryExample3()"
+                class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Example 3
+              </button>
+            </div>
+
+            <div class="flex justify-end">
+              <button
+                type="button"
+                onclick="executeQuery()"
+                class="btn-primary px-6 py-2 text-sm font-medium"
+              >
+                Execute Query
+              </button>
+            </div>
+          </form>
+
+          <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md hidden" id="error-message">
+            <h3 class="font-medium text-red-800">Query Error:</h3>
+            <p class="text-red-600 text-sm mt-1" id="error-text"></p>
           </div>
 
-          <div class="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onclick="setQueryExample1()"
-              class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-            >
-              Example 1
-            </button>
-            <button
-              type="button"
-              onclick="setQueryExample2()"
-              class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-            >
-              Example 2
-            </button>
-            <button
-              type="button"
-              onclick="setQueryExample3()"
-              class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-            >
-              Example 3
-            </button>
+          <div class="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-md">
+            <h3 class="font-medium text-blue-800 mb-2">Query Tips:</h3>
+            <ul class="text-blue-600 text-sm space-y-1">
+              <li>• Use <code class="bg-blue-100 px-1 rounded">FOR v, e, p IN 1..depth ANY 'nodeId' GRAPH 'graphName'</code> for traversals</li>
+              <li>• <code class="bg-blue-100 px-1 rounded">RETURN {"{nodes: [v], edges: [e]}"}</code> format works best</li>
+              <li>• Try limiting depth (1..2) for better performance</li>
+              <li>• Use node IDs from your CIDOC CRM graph</li>
+            </ul>
           </div>
-
-          <div class="flex justify-end">
-            <button
-              type="button"
-              onclick="executeQuery()"
-              class="btn-primary px-6 py-2 text-sm font-medium"
-            >
-              Execute Query
-            </button>
-          </div>
-        </form>
-
-        <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md hidden" id="error-message">
-          <h3 class="font-medium text-red-800">Query Error:</h3>
-          <p class="text-red-600 text-sm mt-1" id="error-text"></p>
-        </div>
-
-        <div class="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-md">
-          <h3 class="font-medium text-blue-800 mb-2">Query Tips:</h3>
-          <ul class="text-blue-600 text-sm space-y-1">
-            <li>• Use <code class="bg-blue-100 px-1 rounded">FOR v, e, p IN 1..depth ANY 'nodeId' GRAPH 'graphName'</code> for traversals</li>
-            <li>• <code class="bg-blue-100 px-1 rounded">RETURN {"{nodes: [v], edges: [e]}"}</code> format works best</li>
-            <li>• Try limiting depth (1..2) for better performance</li>
-            <li>• Use node IDs from your CIDOC CRM graph</li>
-          </ul>
         </div>
       </div>
 
@@ -149,6 +166,8 @@
           </div>
         </div>
       </div>
+
+      <div class="h-20"></div>
     </main>
 
     <footer class="bg-white border-t mt-8 py-4">
@@ -216,8 +235,8 @@
               label: node.label || node.id,
               title: `${node.type || 'Unknown'}\n${JSON.stringify(node.properties || {}, null, 2)}`,
               color: getNodeColor(node.type),
-              shape: 'dot',
-              size: 20,
+              shape: 'circle',
+              size: 25,
             });
           });
         }
@@ -245,12 +264,17 @@
           const data = { nodes: nodes, edges: edges };
           const options = {
             nodes: {
+              shape: 'circle',
               font: {
                 size: 12,
                 face: 'Inter',
               },
               borderWidth: 1,
               borderWidthSelected: 2,
+              scaling: {
+                min: 10,
+                max: 30,
+              },
             },
             edges: {
               font: {
@@ -259,27 +283,35 @@
               },
               smooth: {
                 enabled: true,
-                type: 'dynamic',
+                type: 'continuous',
+                roundness: 0.5,
+              },
+              arrows: {
+                to: {
+                  enabled: true,
+                  type: 'arrow',
+                },
               },
             },
             physics: {
               enabled: true,
               barnesHut: {
                 gravitationalConstant: -80000,
-                springConstant: 0.04,
-                springLength: 200,
-                avoidOverlap: 0.5,
+                centralGravity: 0.3,
+                springLength: 220,
+                springConstant: 0.18,
+                damping: 0.4,
+                avoidOverlap: 0.1,
               },
-              stabilization: {
-                enabled: true,
-                iterations: 1000,
-                updateInterval: 50,
-              },
+              minVelocity: 0.75,
+              solver: 'barnesHut',
             },
             interaction: {
               hover: true,
               navigationButtons: true,
               keyboard: true,
+              hideEdgesOnDrag: true,
+              tooltipDelay: 200,
             },
           };
           network = new vis.Network(container, data, options);

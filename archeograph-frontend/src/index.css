@@ -14,10 +14,30 @@ body {
 }
 
 #root {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Ensure document panel has proper scrolling */
+.document-scroll-container {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af #f1f5f9;
+}
+
+/* WebKit browsers */
+.document-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.document-scroll-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.document-scroll-container::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+  border-radius: 4px;
 }
 
 /* Graph visualization container */

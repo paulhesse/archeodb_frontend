@@ -36,7 +36,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           border: '#333333',
         },
       },
-      shape: 'dot',
+      shape: 'circle',
       size: 25,
     }));
 
@@ -58,6 +58,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           type: 'arrow',
         },
       },
+      dashes: false,
     }));
 
     // Create network
@@ -66,7 +67,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       { nodes: visNodes, edges: visEdges },
       {
         nodes: {
-          shape: 'dot',
+          shape: 'circle',
           scaling: {
             min: 10,
             max: 30,
@@ -89,7 +90,19 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           hideEdgesOnDrag: true,
           tooltipDelay: 200,
         },
-        physics: false,
+        physics: {
+          enabled: true,
+          barnesHut: {
+            gravitationalConstant: -80000,
+            centralGravity: 0.3,
+            springLength: 220,
+            springConstant: 0.18,
+            damping: 0.4,
+            avoidOverlap: 0.1,
+          },
+          minVelocity: 0.75,
+          solver: 'barnesHut',
+        },
       }
     );
 
@@ -117,11 +130,11 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
   }, [nodes, edges, onNodeClick, onNodeHover]);
 
   return (
-    <div>
+    <div style={{ width: '100%', height: '100%' }}>
       <div
         ref={containerRef}
         id="mynetwork"
-        style={{ width: 800, height: 800, border: '1px solid lightgray' }}
+        style={{ width: '100%', height: '60vh', minHeight: '400px', border: '1px solid lightgray' }}
       />
     </div>
   );

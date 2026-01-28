@@ -73,7 +73,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-hidden">
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
           <div>
@@ -93,50 +93,25 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <section className="lg:col-span-3">
-            <QueryInterface
-              onQuerySubmit={handleQuerySubmit}
-              isLoading={isLoading}
-              error={error}
-            />
-          </section>
-
+      <main className="max-w-7xl mx-auto px-2 py-2 flex flex-col h-[calc(100vh-120px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 flex-1 min-h-0">
           <section className="lg:col-span-2">
-            <div className="border border-slate-200 bg-white">
+            <div className="border border-slate-200 bg-white flex flex-col min-h-0">
               <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
                 <div>
                   <h2 className="text-sm font-semibold text-slate-900">
                     Knowledge Graph
                   </h2>
-                  <p className="text-xs text-slate-500">
-                    Pan/zoom with mouse, use navigation buttons, click node for details.
-                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowNodePanel(!showNodePanel)}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
-                  >
-                    {showNodePanel ? 'Hide' : 'Show'} Node Panel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowDebugPanel(!showDebugPanel)}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
-                  >
-                    {showDebugPanel ? 'Hide' : 'Show'} Debug
-                  </button>
                   <div className="hidden sm:block text-xs text-slate-500">
                     {isLoading ? 'Updating…' : 'Ready'}
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 h-[600px]">
+              <div className="p-4 flex-1 min-h-0">
                 {isLoading && !nodes.length && !edges.length ? (
                   <div className="flex flex-col justify-center items-center h-full">
                     <div className="loading-spinner" />
@@ -151,34 +126,37 @@ const App: React.FC = () => {
                   />
                 )}
               </div>
-
-              {showDebugPanel && rawResponse && (
-                <div className="border-t border-slate-200 px-4 py-3">
-                  <h3 className="text-sm font-semibold text-slate-900 mb-2">Raw Response Data</h3>
-                  <div className="bg-slate-100 text-slate-800 p-3 rounded-lg text-xs font-mono overflow-x-auto max-h-60">
-                    <pre>{JSON.stringify(rawResponse, null, 2)}</pre>
-                  </div>
-                </div>
-              )}
             </div>
           </section>
 
           <section className="lg:col-span-1">
-            <div className="border border-slate-200 bg-white h-[600px]">
-              <NodeDetailPanel
-                selectedNode={selectedNode}
-                onClose={() => setSelectedNode(null)}
-              />
+            <div className="border border-slate-200 bg-white flex flex-col min-h-0">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-900">
+                    Query & Document Panel
+                  </h2>
+                </div>
+              </div>
+
+              <div className="p-4 flex-1 min-h-0 overflow-auto">
+                <QueryInterface
+                  onQuerySubmit={handleQuerySubmit}
+                  isLoading={isLoading}
+                  error={error}
+                />
+
+                <div className="mt-4">
+                  <NodeDetailPanel
+                    selectedNode={selectedNode}
+                    onClose={() => setSelectedNode(null)}
+                  />
+                </div>
+              </div>
             </div>
           </section>
         </div>
       </main>
-
-      <footer className="border-t border-slate-200 py-6">
-        <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-          ArchaeoGraph • CIDOC CRM Knowledge Graph • © {new Date().getFullYear()}
-        </div>
-      </footer>
     </div>
   );
 };

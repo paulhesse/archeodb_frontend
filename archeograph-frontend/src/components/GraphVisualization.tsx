@@ -118,8 +118,6 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
 
   return (
     <div>
-      <h2>Static smooth curves - World Cup Network</h2>
-
       <div
         ref={containerRef}
         id="mynetwork"

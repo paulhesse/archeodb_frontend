@@ -7,12 +7,14 @@ interface QueryPanelProps {
   onQuerySubmit: (query: string) => Promise<ArangoQueryResponse>;
   isLoading: boolean;
   error: QueryError | null;
+  onActiveTabChange?: (tab: 'aql' | 'ai') => void;
 }
 
 const QueryPanel: React.FC<QueryPanelProps> = ({
   onQuerySubmit,
   isLoading,
   error,
+  onActiveTabChange,
 }) => {
   const [activeTab, setActiveTab] = useState<'aql' | 'ai'>('aql');
   const [detectedAqlQuery, setDetectedAqlQuery] = useState<string | null>(null);
@@ -39,7 +41,10 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
       {/* Tab Navigation */}
       <div className="flex border-b border-slate-200">
         <button
-          onClick={() => setActiveTab('aql')}
+          onClick={() => {
+            setActiveTab('aql');
+            onActiveTabChange?.('aql');
+          }}
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'aql'
               ? 'border-b-2 border-slate-600 text-slate-900'
@@ -49,7 +54,10 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
           AQL Query
         </button>
         <button
-          onClick={() => setActiveTab('ai')}
+          onClick={() => {
+            setActiveTab('ai');
+            onActiveTabChange?.('ai');
+          }}
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'ai'
               ? 'border-b-2 border-slate-600 text-slate-900'
@@ -76,19 +84,6 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
         </div>
       )}
 
-      {/* Test button for manual testing */}
-      <div className="flex justify-end">
-        <button
-          onClick={() => {
-            // Test with a sample AQL query
-            const testQuery = 'FOR v, e, p IN 1..2 ANY "root" GRAPH "cidoc_graph" RETURN {nodes: [v], edges: [e]}';
-            handleAqlQueryDetected(testQuery);
-          }}
-          className="rounded bg-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-300 transition-colors"
-        >
-          🧪 Test AQL Detection
-        </button>
-      </div>
 
       {/* Tab Content */}
       <div className="flex-1 min-h-0 overflow-hidden">
@@ -104,7 +99,9 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
 
         {/* Keep ChatContainer mounted but hidden to preserve chat state */}
         <div className={`${activeTab === 'ai' ? 'block' : 'hidden'} flex-1 min-h-0`}>
-          <ChatContainer onAqlQueryDetected={handleAqlQueryDetected} />
+          <div className="h-[calc(100vh-300px)]">
+            <ChatContainer onAqlQueryDetected={handleAqlQueryDetected} />
+          </div>
         </div>
       </div>
     </div>

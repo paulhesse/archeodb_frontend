@@ -11,35 +11,37 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
 
   // Function to detect AQL queries in text
   const detectAqlQuery = (text: string): string | null => {
-    // Simple pattern to detect AQL queries - looks for FOR...RETURN patterns
-    const aqlPattern = /FOR\s+.*?\s+RETURN\s+.*?(?=\s*[.;]|$)/i;
-    const match = text.match(aqlPattern);
+    // 1. Check for Markdown code blocks first (most reliable)
+    // Matches ```aql ... ``` or just ``` ... ```
+    const markdownPattern = /```(?:aql)?\s*([\s\S]*?)```/i;
+    const match = text.match(markdownPattern);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
 
-    if (match) {
+    // 2. Look for the specific pattern mentioned in the task
+    // Matches "Here's the query I'll run:" followed by a query
+    const specificPattern = /Here's the query I'll run:\s*([\s\S]*?)(?=\s*This test will:|\s*What you should see|\s*Would you like|$)/i;
+    const specificMatch = text.match(specificPattern);
+    if (specificMatch && specificMatch[1]) {
+      // Clean up the query
+      let query = specificMatch[1].trim();
+      // Remove any leading/trailing punctuation or formatting
+      query = query.replace(/^[:-\s]+|[:-\s]+$/g, '');
+      return query;
+    }
+
+    // 3. Fallback: Simple pattern to detect AQL queries - looks for FOR...RETURN patterns
+    const aqlPattern = /FOR\s+.*?\s+RETURN\s+.*?(?=\s*[.;]|$)/i;
+    const simpleMatch = text.match(aqlPattern);
+
+    if (simpleMatch) {
       // Clean up the query by removing any trailing punctuation
-      let query = match[0].trim();
+      let query = simpleMatch[0].trim();
       if (query.endsWith(';') || query.endsWith('.')) {
         query = query.slice(0, -1).trim();
       }
       return query;
-    }
-
-    // Also check for common AQL patterns
-    const simplePatterns = [
-      /FOR\s+.*?\s+IN\s+.*?(?=\s*[.;]|$)/i,
-      /RETURN\s+.*?(?=\s*[.;]|$)/i,
-      /FOR\s+.*?\s+ANY\s+.*?\s+GRAPH\s+.*?(?=\s*[.;]|$)/i
-    ];
-
-    for (const pattern of simplePatterns) {
-      const simpleMatch = text.match(pattern);
-      if (simpleMatch) {
-        let query = simpleMatch[0].trim();
-        if (query.endsWith(';') || query.endsWith('.')) {
-          query = query.slice(0, -1).trim();
-        }
-        return query;
-      }
     }
 
     return null;
@@ -48,10 +50,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
   // Function to monitor chat messages (simplified approach)
   const monitorChatMessages = () => {
     if (!onAqlQueryDetected) return;
-
-    // Since we can't directly access the n8n chat internals, we'll implement
-    // a manual detection mechanism that users can trigger
-    // In a real implementation, this would be more sophisticated
 
     // For now, we'll provide a way to manually detect queries from copied text
     const handlePasteDetection = (event: ClipboardEvent) => {
@@ -77,9 +75,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
     // Initialize chat when component mounts
     if (chatRef.current) {
       // Only initialize chat if it doesn't already exist to preserve state
-      // We check if the container has any children, as the chat widget adds elements to it
       if (chatRef.current.children.length === 0) {
-        // Always create the chat - this ensures it initializes properly
         createChat({
           webhookUrl: 'https://n8n.paulserver.dpdns.org/webhook/11608553-f847-445d-85c9-08002aaa4a3a/chat',
           target: '#n8n-chat',
@@ -88,7 +84,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
           initialMessages: [
             'Hi there! 👋',
             'I can help you query the ArchaeoGraph database using natural language. Try asking me about artifacts, places, or relationships!',
-            'Tip: When I provide an AQL query, you can copy it and it will automatically appear in the query interface!'
+            'Tip: When I provide an AQL query, click the "Import AQL" button to run it!'
           ],
           enableStreaming: false,
           i18n: {
@@ -115,75 +111,83 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
     };
   }, [onAqlQueryDetected]);
 
+  const handleImportLastMessage = () => {
+     if (!onAqlQueryDetected) return;
+
+     const chatElement = document.querySelector('#n8n-chat');
+     if (chatElement) {
+       // Debug: Show what we're working with
+       alert(`Chat element found. Inner HTML length: ${chatElement.innerHTML.length}`);
+
+       // Try multiple selectors to find messages
+       const selectors = [
+         '.chat-message-assistant',
+         '.message-assistant',
+         '[class*="assistant"]',
+         '.chat-message',
+         '.message',
+         'div[role="article"]'
+       ];
+
+       let messages: Element[] = [];
+       for (const selector of selectors) {
+         const foundMessages = chatElement.querySelectorAll(selector);
+         if (foundMessages.length > 0) {
+           messages = Array.from(foundMessages);
+           alert(`Found ${messages.length} messages using selector: ${selector}`);
+           break;
+         }
+       }
+
+       if (messages.length > 0) {
+         const lastMessage = messages[messages.length - 1];
+         alert(`Processing last message. Text length: ${lastMessage.textContent?.length || 0}`);
+
+         // Priority 1: Check for code block element in DOM
+         const codeElement = lastMessage.querySelector('code');
+         if (codeElement && codeElement.textContent) {
+             alert(`Found code element! Query preview: ${codeElement.textContent.trim().substring(0, 100)}...`);
+             onAqlQueryDetected(codeElement.textContent.trim());
+             return;
+         }
+
+         // Priority 2: Parse text content
+         const messageText = lastMessage.textContent || '';
+         const detectedQuery = detectAqlQuery(messageText);
+
+         if (detectedQuery) {
+           alert(`Successfully detected AQL query! Preview: ${detectedQuery.substring(0, 100)}...`);
+           onAqlQueryDetected(detectedQuery);
+         } else {
+           alert(`No AQL query detected. Message preview: ${messageText.substring(0, 200)}...`);
+         }
+       } else {
+           alert('DEBUG: No messages found with any selector. Chat HTML preview: ' + chatElement.innerHTML.substring(0, 500));
+       }
+     } else {
+         alert('Chat element not found!');
+     }
+  };
+
   return (
     <div className="h-full w-full flex flex-col">
-      <div className="flex gap-1 mb-1 px-1">
-        {onAqlQueryDetected && (
-          <>
-            <button
-              onClick={() => {
-                // Get the last bot message from the chat
-                const chatElement = document.querySelector('#n8n-chat');
-                if (chatElement) {
-                  // This is a simplified approach - in a real implementation,
-                  // we would need to access the chat messages more directly
-                  const lastMessage = chatElement.querySelector('.chat-message-assistant:last-child');
-                  if (lastMessage) {
-                    const messageText = lastMessage.textContent || '';
-                    const detectedQuery = detectAqlQuery(messageText);
-                    if (detectedQuery) {
-                      onAqlQueryDetected(detectedQuery);
-                    } else {
-                      alert('No AQL query detected in the last message. Try copying the query manually.');
-                    }
-                  }
-                }
-              }}
-              className="rounded bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
-              title="Detect AQL Query in last message"
-            >
-              <span>🔍</span>
-              <span>Last</span>
-            </button>
-            <button
-              onClick={() => {
-                const chatElement = document.querySelector('#n8n-chat');
-                if (chatElement) {
-                  // Select all bot messages and try to find AQL queries in them
-                  const botMessages = chatElement.querySelectorAll('.chat-message-assistant');
-                  const queries: string[] = [];
-
-                  botMessages.forEach(message => {
-                    const messageText = message.textContent || '';
-                    const detectedQuery = detectAqlQuery(messageText);
-                    if (detectedQuery && !queries.includes(detectedQuery)) {
-                      queries.push(detectedQuery);
-                    }
-                  });
-
-                  if (queries.length > 0) {
-                    // Use the most recent query
-                    onAqlQueryDetected(queries[queries.length - 1]);
-                  } else {
-                    alert('No AQL queries detected in the chat. Try copying the query manually.');
-                  }
-                }
-              }}
-              className="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700 transition-colors flex items-center gap-1"
-              title="Scan all messages for AQL queries"
-            >
-              <span>🔍</span>
-              <span>All</span>
-            </button>
-          </>
-        )}
-      </div>
       <div className="flex-1 min-h-0 overflow-hidden">
         <div
           id="n8n-chat"
           ref={chatRef}
           className="h-full w-full overflow-y-auto"
         />
+      </div>
+      <div className="flex gap-1 mt-2 px-1">
+        {onAqlQueryDetected && (
+          <button
+            onClick={handleImportLastMessage}
+            className="w-full rounded bg-black px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+            title="Import AQL query from the last message"
+          >
+            Import AQL from Last Message
+          </button>
+        )}
       </div>
       {/* Add minimalistic styling to match the app's design */}
       <style>

@@ -11,11 +11,9 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<QueryError | null>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [rawResponse, setRawResponse] = useState<any>(null);
-  const [showDebugPanel, setShowDebugPanel] = useState<boolean>(false);
-  const [showDataPanel, setShowDataPanel] = useState<boolean>(false);
-  const [showNodePanel, setShowNodePanel] = useState<boolean>(true);
+  const [_hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [_rawResponse, setRawResponse] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'aql' | 'ai'>('aql');
 
   const arangoService = new ArangoService();
 
@@ -151,6 +149,7 @@ const App: React.FC = () => {
                     onQuerySubmit={handleQuerySubmit}
                     isLoading={isLoading}
                     error={error}
+                    onActiveTabChange={setActiveTab}
                   />
                 </div>
 

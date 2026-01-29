@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import GraphVisualization from './components/GraphVisualization';
-import QueryInterface from './components/QueryInterface';
+import QueryPanel from './components/QueryPanel';
 import NodeDetailPanel from './components/NodeDetailPanel';
 import ArangoService from './services/arangoService';
 import type { GraphNode, GraphEdge, ArangoQueryResponse, QueryError } from './services/arangoService';
@@ -147,7 +147,7 @@ const App: React.FC = () => {
 
               <div className="p-4 flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
                 <div className="shrink-0">
-                  <QueryInterface
+                  <QueryPanel
                     onQuerySubmit={handleQuerySubmit}
                     isLoading={isLoading}
                     error={error}

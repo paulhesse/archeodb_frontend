@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@n8n/chat": "^1.4.0-exp.0",
     "cytoscape": "^3.33.1",
     "cytoscape-cise": "^2.0.1",
     "react": "^19.2.0",

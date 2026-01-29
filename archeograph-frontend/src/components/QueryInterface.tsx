@@ -5,14 +5,29 @@ interface QueryInterfaceProps {
   onQuerySubmit: (query: string) => Promise<ArangoQueryResponse>;
   isLoading: boolean;
   error: QueryError | null;
+  initialQuery?: string;
+  onQueryUsed?: () => void;
 }
 
 const QueryInterface: React.FC<QueryInterfaceProps> = ({
   onQuerySubmit,
   isLoading,
   error,
+  initialQuery = '',
+  onQueryUsed,
 }) => {
-  const [query, setQuery] = useState<string>('');
+  const [query, setQuery] = useState<string>(initialQuery);
+
+  // Reset the query when initialQuery changes
+  React.useEffect(() => {
+    if (initialQuery && initialQuery !== query) {
+      setQuery(initialQuery);
+      // Call the callback to indicate the query has been used
+      if (onQueryUsed) {
+        onQueryUsed();
+      }
+    }
+  }, [initialQuery, query, onQueryUsed]);
   const [queryExamples] = useState<string[]>([
     'FOR v, e, p IN 1..2 ANY "root" GRAPH "cidoc_graph" RETURN {nodes: [v], edges: [e]}',
     'FOR node IN cidoc_graph RETURN node',

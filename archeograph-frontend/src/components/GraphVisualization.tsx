@@ -17,6 +17,17 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const networkRef = useRef<Network | null>(null);
+  const onNodeClickRef = useRef(onNodeClick);
+  const onNodeHoverRef = useRef(onNodeHover);
+
+  // Update refs when props change to avoid re-triggering the main useEffect
+  useEffect(() => {
+    onNodeClickRef.current = onNodeClick;
+  }, [onNodeClick]);
+
+  useEffect(() => {
+    onNodeHoverRef.current = onNodeHover;
+  }, [onNodeHover]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -34,6 +45,17 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
         highlight: {
           background: '#333333',
           border: '#333333',
+        },
+      },
+      font: {
+        color: '#333333',
+      },
+      chosen: {
+        node: true,
+        label: (values: any, _id: any, selected: boolean) => {
+          if (selected) {
+            values.color = '#ffffff';
+          }
         },
       },
       shape: 'circle',
@@ -89,6 +111,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
         interaction: {
           hideEdgesOnDrag: true,
           tooltipDelay: 200,
+          hover: true,
         },
         physics: {
           enabled: true,
@@ -102,6 +125,13 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           },
           minVelocity: 0.75,
           solver: 'barnesHut',
+          stabilization: {
+            enabled: true,
+            iterations: 1000,
+            updateInterval: 100,
+            onlyDynamicEdges: false,
+            fit: true,
+          },
         },
       }
     );
@@ -112,22 +142,22 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
     // Event handlers
     network.on('click', (params) => {
       if (params.nodes.length > 0) {
-        onNodeClick?.(params.nodes[0]);
+        onNodeClickRef.current?.(params.nodes[0]);
       }
     });
 
     network.on('hoverNode', (params) => {
-      onNodeHover?.(params.node);
+      onNodeHoverRef.current?.(params.node);
     });
 
     network.on('blurNode', () => {
-      onNodeHover?.(null);
+      onNodeHoverRef.current?.(null);
     });
 
     return () => {
       network.destroy();
     };
-  }, [nodes, edges, onNodeClick, onNodeHover]);
+  }, [nodes, edges]);
 
   return (
     <div style={{ width: '100%', height: '100%' }}>

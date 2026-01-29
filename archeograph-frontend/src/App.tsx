@@ -61,14 +61,17 @@ const App: React.FC = () => {
     }
   };
 
-  const handleNodeClick = (nodeId: string) => {
-    const clickedNode = nodes.find(node => node.id === nodeId) || null;
-    setSelectedNode(clickedNode);
-  };
+  const handleNodeClick = React.useCallback((nodeId: string) => {
+    setNodes(prevNodes => {
+      const clickedNode = prevNodes.find(node => node.id === nodeId) || null;
+      setSelectedNode(clickedNode);
+      return prevNodes;
+    });
+  }, []);
 
-  const handleNodeHover = (nodeId: string | null) => {
+  const handleNodeHover = React.useCallback((nodeId: string | null) => {
     setHoveredNode(nodeId);
-  };
+  }, []);
 
   return (
     // Root must be a flex column so the main area can take the remaining viewport height

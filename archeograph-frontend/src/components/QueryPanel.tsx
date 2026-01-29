@@ -70,21 +70,6 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
         </button>
       </div>
 
-      {/* Detected AQL Query Notification */}
-      {detectedAqlQuery && (
-        <div className="rounded border border-blue-300 bg-blue-50 px-3 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-blue-700">AQL Query detected from AI Assistant</span>
-            <code className="text-xs bg-blue-100 px-1 rounded">{detectedAqlQuery.substring(0, 50)}{detectedAqlQuery.length > 50 ? '...' : ''}</code>
-          </div>
-          <button
-            onClick={handleUseAqlQuery}
-            className="rounded bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
-          >
-            Use AQL Query
-          </button>
-        </div>
-      )}
 
 
       {/* Tab Content */}

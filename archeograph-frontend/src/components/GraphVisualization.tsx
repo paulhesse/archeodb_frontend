@@ -134,7 +134,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       <div
         ref={containerRef}
         id="mynetwork"
-        style={{ width: '100%', height: '60vh', minHeight: '400px', border: '1px solid lightgray' }}
+        style={{ width: '100%', height: '100%', minHeight: '400px', border: '1px solid lightgray' }}
       />
     </div>
   );

@@ -23,12 +23,14 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
     setDetectedAqlQuery(query);
     // Switch to AQL tab when a query is detected
     setActiveTab('aql');
-  }, []);
+    onActiveTabChange?.('aql');
+  }, [onActiveTabChange]);
 
   const handleUseAqlQuery = () => {
     if (detectedAqlQuery) {
       // This will be handled by the QueryInterface component
       setActiveTab('aql');
+      onActiveTabChange?.('aql');
     }
   };
 
@@ -98,8 +100,8 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
         ) : null}
 
         {/* Keep ChatContainer mounted but hidden to preserve chat state */}
-        <div className={`${activeTab === 'ai' ? 'block' : 'hidden'} flex-1 min-h-0`}>
-          <div className="h-[calc(100vh-300px)]">
+        <div className={`${activeTab === 'ai' ? 'block' : 'hidden'} flex-1 min-h-0 h-full`}>
+          <div className="h-full">
             <ChatContainer onAqlQueryDetected={handleAqlQueryDetected} />
           </div>
         </div>

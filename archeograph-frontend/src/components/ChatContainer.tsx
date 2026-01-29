@@ -82,9 +82,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
           mode: 'fullscreen',
           showWelcomeScreen: false,
           initialMessages: [
-            'Hi there! 👋',
-            'I can help you query the ArchaeoGraph database using natural language. Try asking me about artifacts, places, or relationships!',
-            'Tip: When I provide an AQL query, click the "Import AQL" button to run it!'
+            'I can help you query the ArchaeoGraph database using natural language. Try asking me about artifacts, places, or relationships!'
           ],
           enableStreaming: false,
           i18n: {
@@ -213,6 +211,11 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
             --chat--textarea--height: 48px;
             --chat--message--padding: 0.75rem;
             --chat--message--font-size: 0.875rem;
+            /* Make paper plane button black (black icon on white background) */
+            --chat--input--send--button--background: #ffffff;
+            --chat--input--send--button--color: #000000;
+            --chat--input--send--button--background-hover: #f5f5f5;
+            --chat--input--send--button--color-hover: #000000;
           }
 
           /* Constrain n8n chat widget to prevent UI breakage */

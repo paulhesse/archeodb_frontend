@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import GraphVisualization from './components/GraphVisualization';
 import QueryPanel from './components/QueryPanel';
-import NodeDetailPanel from './components/NodeDetailPanel';
+import IngestData from './components/IngestData';
+import DatabaseResults from './components/DatabaseResults';
 import ArangoService from './services/arangoService';
 import type { GraphNode, GraphEdge, ArangoQueryResponse, QueryError } from './services/arangoService';
 
@@ -15,6 +16,8 @@ const App: React.FC = () => {
   const [_rawResponse, setRawResponse] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'aql' | 'node' | 'ai'>('aql');
   const [activeMainTab, setActiveMainTab] = useState<'ingest' | 'explore'>('explore');
+  const [selectedDatabaseItem, setSelectedDatabaseItem] = useState<any>(null);
+  const [databaseResults, setDatabaseResults] = useState<Record<string, any[]>>({});
 
   const arangoService = new ArangoService();
 
@@ -68,6 +71,8 @@ const App: React.FC = () => {
       setSelectedNode(clickedNode);
       return prevNodes;
     });
+    // Automatically switch to node details tab when a node is selected
+    setActiveTab('node');
   }, []);
 
   const handleNodeHover = React.useCallback((nodeId: string | null) => {
@@ -102,8 +107,8 @@ const App: React.FC = () => {
         - main is flex-1 so it always fits the remaining viewport height under the header.
       */}
       <main className="max-w-8xl mx-auto w-full px-2 py-2 pb-6 flex flex-col flex-1 min-h-0">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 flex-1 min-h-0">
-          <section className="lg:col-span-2 h-full">
+        <div className="flex flex-col lg:flex-row gap-2 flex-1 min-h-0">
+          <section className="lg:flex-[2] min-h-0 min-w-0">
             <div className="border border-slate-200 bg-white flex flex-col h-full">
               <div className="flex items-center justify-between gap-3 border-b border-slate-200">
                 <div className="flex h-full">
@@ -136,7 +141,7 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-4 flex-1 min-h-0 overflow-hidden">
+              <div className="p-4 flex-1 min-h-0 overflow-hidden flex flex-col">
                 {activeMainTab === 'explore' ? (
                   isLoading && !nodes.length && !edges.length ? (
                     <div className="flex flex-col justify-center items-center h-full">
@@ -152,16 +157,18 @@ const App: React.FC = () => {
                     />
                   )
                 ) : (
-                  <div className="flex flex-col justify-center items-center h-full text-slate-500">
-                    <p className="text-lg font-medium">Ingest Data Interface</p>
-                    <p className="text-sm">Structure placeholder for data ingestion</p>
-                  </div>
+                  <DatabaseResults
+                    onItemSelect={(item) => {
+                      setSelectedDatabaseItem(item);
+                    }}
+                    results={databaseResults}
+                  />
                 )}
               </div>
             </div>
           </section>
 
-          <section className="lg:col-span-1 min-h-0">
+          <section className="lg:flex-[1] min-h-0 min-w-0">
             <div className="border border-slate-200 bg-white flex flex-col h-full min-h-0">
               <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
                 <div>
@@ -179,23 +186,38 @@ const App: React.FC = () => {
                         onQuerySubmit={handleQuerySubmit}
                         isLoading={isLoading}
                         error={error}
+                        activeTab={activeTab}
                         onActiveTabChange={setActiveTab}
+                        selectedNode={selectedNode}
+                        onCloseNodeDetails={() => setSelectedNode(null)}
                       />
                     </div>
-
-                    {activeTab === 'node' && (
-                      <div className="flex-1 min-h-0 border border-slate-100 rounded flex flex-col overflow-hidden document-scroll-container">
-                        <NodeDetailPanel
-                          selectedNode={selectedNode}
-                          onClose={() => setSelectedNode(null)}
-                        />
-                      </div>
-                    )}
                   </>
                 ) : (
-                  <div className="flex flex-col justify-center items-center h-full text-slate-500">
-                    <p className="text-sm">Ingestion parameters and logs will appear here</p>
-                  </div>
+                  <IngestData
+                    onAddToGraph={(item) => {
+                      // Remove from database results
+                      setDatabaseResults(prev => {
+                        const newResults = { ...prev };
+                        if (newResults[item.source]) {
+                          newResults[item.source] = newResults[item.source].filter(i => i.id !== item.id);
+                        }
+                        return newResults;
+                      });
+                      // Clear selected item
+                      setSelectedDatabaseItem(null);
+                    }}
+                    onItemSelect={(item) => {
+                      console.log('Item selected in IngestData:', item);
+                    }}
+                    onResultsReceived={(source, items) => {
+                      setDatabaseResults(prev => ({
+                        ...prev,
+                        [source]: items
+                      }));
+                    }}
+                    selectedItem={selectedDatabaseItem}
+                  />
                 )}
               </div>
             </div>

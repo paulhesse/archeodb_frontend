@@ -1,36 +1,40 @@
 import React, { useState, useCallback } from 'react';
 import QueryInterface from './QueryInterface';
 import ChatContainer from './ChatContainer';
-import type { ArangoQueryResponse, QueryError } from '../services/arangoService';
+import NodeDetailPanel from './NodeDetailPanel';
+import type { ArangoQueryResponse, QueryError, GraphNode } from '../services/arangoService';
 
 interface QueryPanelProps {
   onQuerySubmit: (query: string) => Promise<ArangoQueryResponse>;
   isLoading: boolean;
   error: QueryError | null;
-  onActiveTabChange?: (tab: 'aql' | 'node' | 'ai') => void;
+  activeTab: 'aql' | 'node' | 'ai';
+  onActiveTabChange: (tab: 'aql' | 'node' | 'ai') => void;
+  selectedNode: GraphNode | null;
+  onCloseNodeDetails?: () => void;
 }
 
 const QueryPanel: React.FC<QueryPanelProps> = ({
   onQuerySubmit,
   isLoading,
   error,
+  activeTab,
   onActiveTabChange,
+  selectedNode,
+  onCloseNodeDetails,
 }) => {
-  const [activeTab, setActiveTab] = useState<'aql' | 'node' | 'ai'>('aql');
   const [detectedAqlQuery, setDetectedAqlQuery] = useState<string | null>(null);
 
   const handleAqlQueryDetected = useCallback((query: string) => {
     setDetectedAqlQuery(query);
     // Switch to AQL tab when a query is detected
-    setActiveTab('aql');
-    onActiveTabChange?.('aql');
+    onActiveTabChange('aql');
   }, [onActiveTabChange]);
 
   const handleUseAqlQuery = () => {
     if (detectedAqlQuery) {
       // This will be handled by the QueryInterface component
-      setActiveTab('aql');
-      onActiveTabChange?.('aql');
+      onActiveTabChange('aql');
     }
   };
 
@@ -44,8 +48,7 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
       <div className="flex border-b border-slate-200">
         <button
           onClick={() => {
-            setActiveTab('aql');
-            onActiveTabChange?.('aql');
+            onActiveTabChange('aql');
           }}
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'aql'
@@ -57,8 +60,7 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
         </button>
         <button
           onClick={() => {
-            setActiveTab('node');
-            onActiveTabChange?.('node');
+            onActiveTabChange('node');
           }}
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'node'
@@ -70,8 +72,7 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
         </button>
         <button
           onClick={() => {
-            setActiveTab('ai');
-            onActiveTabChange?.('ai');
+            onActiveTabChange('ai');
           }}
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'ai'
@@ -95,6 +96,13 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
             initialQuery={detectedAqlQuery || ''}
             onQueryUsed={handleQueryUsed}
           />
+        ) : activeTab === 'node' ? (
+          <div className="flex-1 min-h-0 border border-slate-100 rounded flex flex-col overflow-hidden document-scroll-container">
+            <NodeDetailPanel
+              selectedNode={selectedNode}
+              onClose={() => onCloseNodeDetails?.()}
+            />
+          </div>
         ) : null}
 
         {/* Keep ChatContainer mounted but hidden to preserve chat state */}

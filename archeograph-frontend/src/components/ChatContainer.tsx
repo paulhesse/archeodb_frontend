@@ -114,9 +114,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
 
      const chatElement = document.querySelector('#n8n-chat');
      if (chatElement) {
-       // Debug: Show what we're working with
-       alert(`Chat element found. Inner HTML length: ${chatElement.innerHTML.length}`);
-
        // Try multiple selectors to find messages
        const selectors = [
          '.chat-message-assistant',
@@ -132,19 +129,16 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
          const foundMessages = chatElement.querySelectorAll(selector);
          if (foundMessages.length > 0) {
            messages = Array.from(foundMessages);
-           alert(`Found ${messages.length} messages using selector: ${selector}`);
            break;
          }
        }
 
        if (messages.length > 0) {
          const lastMessage = messages[messages.length - 1];
-         alert(`Processing last message. Text length: ${lastMessage.textContent?.length || 0}`);
 
          // Priority 1: Check for code block element in DOM
          const codeElement = lastMessage.querySelector('code');
          if (codeElement && codeElement.textContent) {
-             alert(`Found code element! Query preview: ${codeElement.textContent.trim().substring(0, 100)}...`);
              onAqlQueryDetected(codeElement.textContent.trim());
              return;
          }
@@ -154,16 +148,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
          const detectedQuery = detectAqlQuery(messageText);
 
          if (detectedQuery) {
-           alert(`Successfully detected AQL query! Preview: ${detectedQuery.substring(0, 100)}...`);
            onAqlQueryDetected(detectedQuery);
-         } else {
-           alert(`No AQL query detected. Message preview: ${messageText.substring(0, 200)}...`);
          }
-       } else {
-           alert('DEBUG: No messages found with any selector. Chat HTML preview: ' + chatElement.innerHTML.substring(0, 500));
        }
-     } else {
-         alert('Chat element not found!');
      }
   };
 

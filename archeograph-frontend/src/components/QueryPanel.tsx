@@ -7,7 +7,7 @@ interface QueryPanelProps {
   onQuerySubmit: (query: string) => Promise<ArangoQueryResponse>;
   isLoading: boolean;
   error: QueryError | null;
-  onActiveTabChange?: (tab: 'aql' | 'ai') => void;
+  onActiveTabChange?: (tab: 'aql' | 'node' | 'ai') => void;
 }
 
 const QueryPanel: React.FC<QueryPanelProps> = ({
@@ -16,7 +16,7 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
   error,
   onActiveTabChange,
 }) => {
-  const [activeTab, setActiveTab] = useState<'aql' | 'ai'>('aql');
+  const [activeTab, setActiveTab] = useState<'aql' | 'node' | 'ai'>('aql');
   const [detectedAqlQuery, setDetectedAqlQuery] = useState<string | null>(null);
 
   const handleAqlQueryDetected = useCallback((query: string) => {
@@ -54,6 +54,19 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
           }`}
         >
           AQL Query
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab('node');
+            onActiveTabChange?.('node');
+          }}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === 'node'
+              ? 'border-b-2 border-slate-600 text-slate-900'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          Node Details
         </button>
         <button
           onClick={() => {

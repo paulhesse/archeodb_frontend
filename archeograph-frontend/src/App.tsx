@@ -13,7 +13,8 @@ const App: React.FC = () => {
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [_hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [_rawResponse, setRawResponse] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'aql' | 'ai'>('aql');
+  const [activeTab, setActiveTab] = useState<'aql' | 'node' | 'ai'>('aql');
+  const [activeMainTab, setActiveMainTab] = useState<'ingest' | 'explore'>('explore');
 
   const arangoService = new ArangoService();
 
@@ -104,14 +105,31 @@ const App: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 flex-1 min-h-0">
           <section className="lg:col-span-2 h-full">
             <div className="border border-slate-200 bg-white flex flex-col h-full">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
-                <div>
-                  <h2 className="text-sm font-semibold text-slate-900">
-                    Knowledge Graph
-                  </h2>
+              <div className="flex items-center justify-between gap-3 border-b border-slate-200">
+                <div className="flex h-full">
+                  <button
+                    onClick={() => setActiveMainTab('ingest')}
+                    className={`px-5 py-4 text-sm font-semibold border-r border-slate-200 transition-colors ${
+                      activeMainTab === 'ingest'
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-white text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    Ingest Data
+                  </button>
+                  <button
+                    onClick={() => setActiveMainTab('explore')}
+                    className={`px-5 py-4 text-sm font-semibold border-r border-slate-200 transition-colors ${
+                      activeMainTab === 'explore'
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-white text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    Explore Graph
+                  </button>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-5">
                   <div className="hidden sm:block text-xs text-slate-500">
                     {isLoading ? 'Updating…' : 'Ready'}
                   </div>
@@ -119,18 +137,25 @@ const App: React.FC = () => {
               </div>
 
               <div className="p-4 flex-1 min-h-0 overflow-hidden">
-                {isLoading && !nodes.length && !edges.length ? (
-                  <div className="flex flex-col justify-center items-center h-full">
-                    <div className="loading-spinner" />
-                    <p className="mt-4 text-sm text-slate-600">Loading graph data…</p>
-                  </div>
+                {activeMainTab === 'explore' ? (
+                  isLoading && !nodes.length && !edges.length ? (
+                    <div className="flex flex-col justify-center items-center h-full">
+                      <div className="loading-spinner" />
+                      <p className="mt-4 text-sm text-slate-600">Loading graph data…</p>
+                    </div>
+                  ) : (
+                    <GraphVisualization
+                      nodes={nodes}
+                      edges={edges}
+                      onNodeClick={handleNodeClick}
+                      onNodeHover={handleNodeHover}
+                    />
+                  )
                 ) : (
-                  <GraphVisualization
-                    nodes={nodes}
-                    edges={edges}
-                    onNodeClick={handleNodeClick}
-                    onNodeHover={handleNodeHover}
-                  />
+                  <div className="flex flex-col justify-center items-center h-full text-slate-500">
+                    <p className="text-lg font-medium">Ingest Data Interface</p>
+                    <p className="text-sm">Structure placeholder for data ingestion</p>
+                  </div>
                 )}
               </div>
             </div>
@@ -141,27 +166,35 @@ const App: React.FC = () => {
               <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
                 <div>
                   <h2 className="text-sm font-semibold text-slate-900">
-                    Query & Document Panel
+                    {activeMainTab === 'explore' ? 'Query & Document Panel' : 'Ingestion Controls'}
                   </h2>
                 </div>
               </div>
 
               <div className="p-4 flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
-                <div className={activeTab === 'ai' ? "flex-1 min-h-0" : "shrink-0"}>
-                  <QueryPanel
-                    onQuerySubmit={handleQuerySubmit}
-                    isLoading={isLoading}
-                    error={error}
-                    onActiveTabChange={setActiveTab}
-                  />
-                </div>
+                {activeMainTab === 'explore' ? (
+                  <>
+                    <div className={activeTab === 'ai' ? "flex-1 min-h-0" : "shrink-0"}>
+                      <QueryPanel
+                        onQuerySubmit={handleQuerySubmit}
+                        isLoading={isLoading}
+                        error={error}
+                        onActiveTabChange={setActiveTab}
+                      />
+                    </div>
 
-                {activeTab === 'aql' && (
-                  <div className="flex-1 min-h-0 border border-slate-100 rounded flex flex-col overflow-hidden document-scroll-container">
-                    <NodeDetailPanel
-                      selectedNode={selectedNode}
-                      onClose={() => setSelectedNode(null)}
-                    />
+                    {activeTab === 'node' && (
+                      <div className="flex-1 min-h-0 border border-slate-100 rounded flex flex-col overflow-hidden document-scroll-container">
+                        <NodeDetailPanel
+                          selectedNode={selectedNode}
+                          onClose={() => setSelectedNode(null)}
+                        />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex flex-col justify-center items-center h-full text-slate-500">
+                    <p className="text-sm">Ingestion parameters and logs will appear here</p>
                   </div>
                 )}
               </div>

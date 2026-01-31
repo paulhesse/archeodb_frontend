@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Rectangle, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 
 interface DatabaseSource {
   id: string;
@@ -40,6 +42,10 @@ const IngestData: React.FC<IngestDataProps> = ({
   const [activeTab, setActiveTab] = useState<'query' | 'details'>('query');
   const [isIngesting, setIsIngesting] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<DatabaseItem | null>(null);
+  
+  // Spatial filter state
+  const [useSpatialFilter, setUseSpatialFilter] = useState<boolean>(false);
+  const [bbox, setBbox] = useState<[number, number, number, number] | null>(null);
 
   // Update local state when prop changes
   React.useEffect(() => {
@@ -64,6 +70,9 @@ const IngestData: React.FC<IngestDataProps> = ({
     console.log('Query submitted:', query);
     console.log('Selected sources:', selectedSources);
     console.log('Result count:', resultCount);
+    if (useSpatialFilter && bbox) {
+      console.log('Spatial filter (bbox):', bbox);
+    }
 
     if (selectedSources.includes('arachne') || selectedSources.includes('perseus')) {
       setIsIngesting(true);
@@ -78,6 +87,13 @@ const IngestData: React.FC<IngestDataProps> = ({
         const url = new URL(endpoint);
         url.searchParams.append('query', query);
         url.searchParams.append('count', resultCount.toString());
+        
+        if (useSpatialFilter && bbox) {
+          url.searchParams.append('minLat', bbox[0].toString());
+          url.searchParams.append('minLng', bbox[1].toString());
+          url.searchParams.append('maxLat', bbox[2].toString());
+          url.searchParams.append('maxLng', bbox[3].toString());
+        }
 
         const response = await fetch(url.toString(), {
           method: 'GET',
@@ -162,6 +178,34 @@ const IngestData: React.FC<IngestDataProps> = ({
     onItemSelect(item);
   };
 
+  // Internal component to handle map events
+  const MapEvents = ({ onBoundsChange }: { onBoundsChange: (bounds: [number, number, number, number]) => void }) => {
+    const map = useMapEvents({
+      moveend: () => {
+        const bounds = map.getBounds();
+        onBoundsChange([
+          bounds.getSouth(),
+          bounds.getWest(),
+          bounds.getNorth(),
+          bounds.getEast()
+        ]);
+      },
+    });
+
+    // Initialize bounds on mount
+    useEffect(() => {
+      const bounds = map.getBounds();
+      onBoundsChange([
+        bounds.getSouth(),
+        bounds.getWest(),
+        bounds.getNorth(),
+        bounds.getEast()
+      ]);
+    }, [map, onBoundsChange]);
+
+    return null;
+  };
+
   const checkedSources = databaseSources.filter(source => source.checked);
 
   return (
@@ -191,11 +235,11 @@ const IngestData: React.FC<IngestDataProps> = ({
       </div>
 
       {/* Tab Content */}
-      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         {activeTab === 'query' ? (
-          <div className="p-4 border-b border-slate-200 h-full">
-            <form onSubmit={handleQuerySubmit} className="space-y-4 h-full flex flex-col">
-              <div className="flex-1">
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+            <form onSubmit={handleQuerySubmit} className="space-y-4">
+              <div>
                 <label htmlFor="ingest-query" className="block text-sm font-medium text-slate-700 mb-1">
                   Query
                 </label>
@@ -208,20 +252,64 @@ const IngestData: React.FC<IngestDataProps> = ({
                 />
               </div>
 
-              <div>
-                <label htmlFor="result-count" className="block text-sm font-medium text-slate-700 mb-1">
-                  Count of Results
-                </label>
-                <input
-                  id="result-count"
-                  type="number"
-                  min="1"
-                  max="1000"
-                  value={resultCount}
-                  onChange={(e) => setResultCount(parseInt(e.target.value) || 0)}
-                  className="w-32 px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"
-                />
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label htmlFor="result-count" className="block text-sm font-medium text-slate-700 mb-1">
+                    Count of Results
+                  </label>
+                  <input
+                    id="result-count"
+                    type="number"
+                    min="1"
+                    max="1000"
+                    value={resultCount}
+                    onChange={(e) => setResultCount(parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"
+                  />
+                </div>
+                <div className="flex-1 flex flex-col justify-end">
+                  <label className="flex items-center gap-2 mb-2">
+                    <input
+                      type="checkbox"
+                      checked={useSpatialFilter}
+                      onChange={(e) => setUseSpatialFilter(e.target.checked)}
+                      className="h-4 w-4 text-slate-600 border-slate-300 rounded focus:ring-slate-500"
+                    />
+                    <span className="text-sm font-medium text-slate-700">Spatial Filter</span>
+                  </label>
+                </div>
               </div>
+
+              {useSpatialFilter && (
+                <div className="space-y-2">
+                  <div className="h-80 rounded-md overflow-hidden border border-slate-300 z-0">
+                    <MapContainer 
+                      center={[37.9838, 23.7275]} // Athens as default
+                      zoom={5} 
+                      scrollWheelZoom={true}
+                      className="h-full w-full"
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <MapEvents onBoundsChange={setBbox} />
+                      {bbox && (
+                        <Rectangle 
+                          bounds={[[bbox[0], bbox[1]], [bbox[2], bbox[3]]]} 
+                          pathOptions={{ color: 'rgb(15, 23, 42)', weight: 2, fillOpacity: 0.1 }}
+                        />
+                      )}
+                    </MapContainer>
+                  </div>
+                  {bbox && (
+                    <div className="text-[10px] text-slate-500 flex justify-between px-1">
+                      <span>Lat: {bbox[0].toFixed(4)} to {bbox[2].toFixed(4)}</span>
+                      <span>Lng: {bbox[1].toFixed(4)} to {bbox[3].toFixed(4)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div>
                 <p className="text-sm font-medium text-slate-700 mb-2">Data Sources</p>

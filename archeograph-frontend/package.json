@@ -11,10 +11,13 @@
   },
   "dependencies": {
     "@n8n/chat": "^1.4.0-exp.0",
+    "@types/leaflet": "^1.9.21",
     "cytoscape": "^3.33.1",
     "cytoscape-cise": "^2.0.1",
+    "leaflet": "^1.9.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-leaflet": "^5.0.0",
     "vis-network": "^10.0.2"
   },
   "devDependencies": {

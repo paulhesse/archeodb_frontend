@@ -210,11 +210,23 @@ const App: React.FC = () => {
                     onItemSelect={(item) => {
                       console.log('Item selected in IngestData:', item);
                     }}
-                    onResultsReceived={(source, items) => {
-                      setDatabaseResults(prev => ({
-                        ...prev,
-                        [source]: items
-                      }));
+                    onResultsReceived={(source, items, isNewQuery) => {
+                      // If it's a new query (single source or first of multiple), clear previous results
+                      // If it's adding to existing results (multiple sources), accumulate
+                      setDatabaseResults(prev => {
+                        if (isNewQuery) {
+                          // Clear all previous results for new query
+                          return {
+                            [source]: items
+                          };
+                        } else {
+                          // Accumulate results for multiple sources
+                          return {
+                            ...prev,
+                            [source]: items
+                          };
+                        }
+                      });
                     }}
                     selectedItem={selectedDatabaseItem}
                   />

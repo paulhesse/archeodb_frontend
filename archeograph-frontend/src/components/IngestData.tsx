@@ -19,7 +19,7 @@ interface DatabaseItem {
 interface IngestDataProps {
   onAddToGraph: (item: DatabaseItem) => void;
   onItemSelect: (item: DatabaseItem) => void;
-  onResultsReceived?: (source: string, items: DatabaseItem[]) => void;
+  onResultsReceived?: (source: string, items: DatabaseItem[], isNewQuery: boolean) => void;
   selectedItem?: DatabaseItem | null;
 }
 
@@ -34,6 +34,7 @@ const IngestData: React.FC<IngestDataProps> = ({
   const [databaseSources, setDatabaseSources] = useState<DatabaseSource[]>([
     { id: 'perseus', name: 'Perseus', checked: true },
     { id: 'arachne', name: 'Arachne', checked: false },
+    { id: 'opencontext', name: 'Open Context', checked: false },
     { id: 'arango', name: 'ArangoDB', checked: false },
     { id: 'neo4j', name: 'Neo4j', checked: false },
     { id: 'postgres', name: 'PostgreSQL', checked: false },
@@ -74,71 +75,110 @@ const IngestData: React.FC<IngestDataProps> = ({
       console.log('Spatial filter (bbox):', bbox);
     }
 
-    if (selectedSources.includes('arachne') || selectedSources.includes('perseus')) {
+    if (selectedSources.includes('arachne') || selectedSources.includes('perseus') || selectedSources.includes('opencontext')) {
       setIsIngesting(true);
-      const isPerseus = selectedSources.includes('perseus');
-      const sourceName = isPerseus ? 'Perseus' : 'Arachne';
-      const endpoint = isPerseus 
-        ? 'https://n8n.paulserver.dpdns.org/webhook/perseus/search'
-        : 'https://n8n.paulserver.dpdns.org/webhook/3feff6fc-49e5-407d-91eb-9ceeed08aac7';
 
-      console.log(`Sending request to ${sourceName} webhook...`);
-      try {
-        const url = new URL(endpoint);
-        url.searchParams.append('query', query);
-        url.searchParams.append('count', resultCount.toString());
-        
-        if (useSpatialFilter && bbox) {
-          url.searchParams.append('minLat', bbox[0].toString());
-          url.searchParams.append('minLng', bbox[1].toString());
-          url.searchParams.append('maxLat', bbox[2].toString());
-          url.searchParams.append('maxLng', bbox[3].toString());
-        }
+      // Track if this is the first source being processed (new query)
+      let isFirstSource = true;
 
-        const response = await fetch(url.toString(), {
-          method: 'GET',
-          mode: 'cors',
-        });
+      // Process each selected source individually
+      for (const sourceId of selectedSources) {
+        if (sourceId === 'perseus' || sourceId === 'opencontext' || sourceId === 'arachne') {
+<task_progress>
+- [x] Analyze the query interface and data source selection logic
+- [x] Examine how results from different sources are combined
+- [x] Identify the root cause of the issue
+- [x] Implement a fix for the problem
+- [x] Update parsing logic for new unified data format
+- [x] Fix result count calculation
+- [x] Test the solution
+- [x] Investigate result accumulation issue
+- [x] Fix result clearing between queries
+- [ ] Handle both single and multiple source scenarios correctly
+</task_progress>
+          const isPerseus = sourceId === 'perseus';
+          const isOpenContext = sourceId === 'opencontext';
+          const sourceName = isPerseus ? 'Perseus' : isOpenContext ? 'Open Context' : 'Arachne';
+          const endpoint = isPerseus
+            ? 'https://n8n.paulserver.dpdns.org/webhook/perseus/search'
+            : isOpenContext
+              ? 'https://n8n.paulserver.dpdns.org/webhook/opencontext/search'
+              : 'https://n8n.paulserver.dpdns.org/webhook/3feff6fc-49e5-407d-91eb-9ceeed08aac7';
 
-        console.log('Response status:', response.status);
-        if (response.ok) {
-          const data = await response.json().catch(() => ({}));
-          console.log(`${sourceName} ingestion started successfully:`, data);
-          
-          // Parse results if they exist in the response
-          if (data && Array.isArray(data) && data.length > 0 && data[0].result) {
-            const results: DatabaseItem[] = data[0].result.map((r: any) => ({
-              id: r._id || r._key || Math.random().toString(),
-              name: r.title || r.author || 'Unknown Item',
-              type: r.author ? 'Literature' : 'Document',
-              source: isPerseus ? 'perseus' : 'arachne',
-              properties: {
-                author: r.author,
-                title: r.title,
-                text_preview: r.text_content ? r.text_content.substring(0, 150) + '...' : undefined,
-                chunk_id: r.chunk_id,
-                ...r.metadata,
-                original_data: r
-              }
-            }));
-            
-            if (onResultsReceived) {
-              onResultsReceived(isPerseus ? 'perseus' : 'arachne', results);
+          console.log(`Sending request to ${sourceName} webhook...`);
+          try {
+            const url = new URL(endpoint);
+            url.searchParams.append('query', query);
+            url.searchParams.append('count', resultCount.toString());
+
+            if (useSpatialFilter && bbox) {
+              url.searchParams.append('minLat', bbox[0].toString());
+              url.searchParams.append('minLng', bbox[1].toString());
+              url.searchParams.append('maxLat', bbox[2].toString());
+              url.searchParams.append('maxLng', bbox[3].toString());
             }
+
+            const response = await fetch(url.toString(), {
+              method: 'GET',
+              mode: 'cors',
+            });
+
+            console.log('Response status:', response.status);
+            if (response.ok) {
+              const data = await response.json().catch(() => ({}));
+              console.log(`${sourceName} ingestion started successfully:`, data);
+
+              // Parse results based on the unified data format (same for all sources)
+              let results: DatabaseItem[] = [];
+
+              // All sources now return the same format as OpenContext
+              if (data && Array.isArray(data) && data.length > 0) {
+                results = data.map((item: any) => {
+                  // Get the first property as the display name
+                  const firstKey = Object.keys(item)[0];
+                  const displayName = item[firstKey] || 'Unknown Item';
+
+                  // Create properties object from all item data
+                  const properties: Record<string, any> = {...item};
+
+                  // Determine source for the item
+                  const itemSource = isPerseus ? 'perseus' : isOpenContext ? 'opencontext' : 'arachne';
+
+                  return {
+                    id: item.uri || item.href || Math.random().toString(),
+                    name: displayName,
+                    type: item['item category'] || 'Document',
+                    source: itemSource,
+                    properties: {
+                      ...properties,
+                      original_data: item
+                    }
+                  };
+                });
+              }
+
+              if (results.length > 0 && onResultsReceived) {
+                onResultsReceived(isPerseus ? 'perseus' : isOpenContext ? 'opencontext' : 'arachne', results, isFirstSource);
+              }
+
+              // After processing the first source, subsequent sources should accumulate
+              isFirstSource = false;
+
+              const resultCount = Array.isArray(data) ? data.length : 0;
+              alert(`${sourceName} query successful! Found ${resultCount} items.`);
+            } else {
+              const errorText = await response.text().catch(() => 'No error detail');
+              console.error(`${sourceName} ingestion failed to start:`, response.status, errorText);
+              alert(`Failed to start ingestion: ${response.status} ${errorText}`);
+            }
+          } catch (error) {
+            console.error(`Error starting ${sourceName} ingestion:`, error);
+            alert(`Error starting ingestion: ${error instanceof Error ? error.message : String(error)}`);
           }
-          
-          alert(`${sourceName} query successful! Found ${data[0]?.result?.length || 0} items.`);
-        } else {
-          const errorText = await response.text().catch(() => 'No error detail');
-          console.error(`${sourceName} ingestion failed to start:`, response.status, errorText);
-          alert(`Failed to start ingestion: ${response.status} ${errorText}`);
         }
-      } catch (error) {
-        console.error(`Error starting ${sourceName} ingestion:`, error);
-        alert(`Error starting ingestion: ${error instanceof Error ? error.message : String(error)}`);
-      } finally {
-        setIsIngesting(false);
       }
+
+      setIsIngesting(false);
     }
   };
 
@@ -342,15 +382,31 @@ const IngestData: React.FC<IngestDataProps> = ({
         ) : null}
 
         {activeTab === 'details' ? (
-          <div className="flex-1 min-h-0 border border-slate-200 rounded overflow-hidden">
+          <div className="flex-1 min-h-0 border border-slate-200 rounded flex flex-col">
             <div className="p-3 border-b border-slate-200 bg-slate-50">
               <h3 className="text-sm font-semibold text-slate-900">Item Details</h3>
               <p className="text-xs text-slate-500">Details of the selected item</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3">
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 custom-scrollbar">
               {selectedItem ? (
                 <div className="space-y-4">
+                  {/* Thumbnail Image - displayed if available */}
+                  {selectedItem.properties.thumbnail && (
+                    <div className="mb-4">
+                      <img
+                        src={selectedItem.properties.thumbnail}
+                        alt={selectedItem.name}
+                        className="max-w-full h-auto max-h-[500px] object-contain border border-slate-200 rounded-md grayscale"
+                        style={{ filter: 'grayscale(100%) brightness(0.9) contrast(1.1)' }}
+                        onError={(e) => {
+                          // Hide image if it fails to load
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+
                   <div>
                     <h4 className="text-sm font-medium text-slate-700 mb-1">Basic Information</h4>
                     <div className="space-y-1 text-sm">

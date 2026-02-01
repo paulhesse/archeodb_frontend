@@ -23,21 +23,25 @@ body {
 }
 
 /* Ensure document panel has proper scrolling */
-.document-scroll-container {
+.document-scroll-container,
+.custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #9ca3af #f1f5f9;
 }
 
 /* WebKit browsers */
-.document-scroll-container::-webkit-scrollbar {
+.document-scroll-container::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
 
-.document-scroll-container::-webkit-scrollbar-track {
+.document-scroll-container::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
 
-.document-scroll-container::-webkit-scrollbar-thumb {
+.document-scroll-container::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #9ca3af;
   border-radius: 4px;
 }

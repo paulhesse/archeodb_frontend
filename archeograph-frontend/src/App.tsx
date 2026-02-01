@@ -3,6 +3,7 @@ import GraphVisualization from './components/GraphVisualization';
 import QueryPanel from './components/QueryPanel';
 import IngestData from './components/IngestData';
 import DatabaseResults from './components/DatabaseResults';
+import ProjectInfo from './components/ProjectInfo';
 import ArangoService from './services/arangoService';
 import type { GraphNode, GraphEdge, ArangoQueryResponse, QueryError } from './services/arangoService';
 
@@ -15,7 +16,7 @@ const App: React.FC = () => {
   const [_hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [_rawResponse, setRawResponse] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'aql' | 'node' | 'ai'>('aql');
-  const [activeMainTab, setActiveMainTab] = useState<'ingest' | 'explore'>('explore');
+  const [activeMainTab, setActiveMainTab] = useState<'ingest' | 'explore' | 'project'>('explore');
   const [selectedDatabaseItem, setSelectedDatabaseItem] = useState<any>(null);
   const [databaseResults, setDatabaseResults] = useState<Record<string, any[]>>({});
 
@@ -132,6 +133,16 @@ const App: React.FC = () => {
                   >
                     Explore Graph
                   </button>
+                  <button
+                    onClick={() => setActiveMainTab('project')}
+                    className={`px-5 py-4 text-sm font-semibold border-r border-slate-200 transition-colors ${
+                      activeMainTab === 'project'
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-white text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    Project Info
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-2 px-5">
@@ -142,7 +153,9 @@ const App: React.FC = () => {
               </div>
 
               <div className="p-4 flex-1 min-h-0 overflow-hidden flex flex-col">
-                {activeMainTab === 'explore' ? (
+                {activeMainTab === 'project' ? (
+                  <ProjectInfo />
+                ) : activeMainTab === 'explore' ? (
                   isLoading && !nodes.length && !edges.length ? (
                     <div className="flex flex-col justify-center items-center h-full">
                       <div className="loading-spinner" />
@@ -173,13 +186,17 @@ const App: React.FC = () => {
               <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
                 <div>
                   <h2 className="text-sm font-semibold text-slate-900">
-                    {activeMainTab === 'explore' ? 'Query & Document Panel' : 'Ingestion Controls'}
+                    {activeMainTab === 'project' ? 'Project Information' : activeMainTab === 'explore' ? 'Query & Document Panel' : 'Ingestion Controls'}
                   </h2>
                 </div>
               </div>
 
               <div className="p-4 flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
-                {activeMainTab === 'explore' ? (
+                {activeMainTab === 'project' ? (
+                  <div className="flex-1 min-h-0">
+                    {/* Project Info content is in the left panel, this can be empty or contain related controls */}
+                  </div>
+                ) : activeMainTab === 'explore' ? (
                   <>
                     <div className={activeTab === 'ai' ? "flex-1 min-h-0" : "shrink-0"}>
                       <QueryPanel

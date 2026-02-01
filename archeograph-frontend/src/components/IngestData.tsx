@@ -165,15 +165,13 @@ const IngestData: React.FC<IngestDataProps> = ({
               isFirstSource = false;
 
               const resultCount = Array.isArray(data) ? data.length : 0;
-              alert(`${sourceName} query successful! Found ${resultCount} items.`);
+              console.log(`${sourceName} query successful! Found ${resultCount} items.`);
             } else {
               const errorText = await response.text().catch(() => 'No error detail');
               console.error(`${sourceName} ingestion failed to start:`, response.status, errorText);
-              alert(`Failed to start ingestion: ${response.status} ${errorText}`);
             }
           } catch (error) {
             console.error(`Error starting ${sourceName} ingestion:`, error);
-            alert(`Error starting ingestion: ${error instanceof Error ? error.message : String(error)}`);
           }
         }
       }
@@ -184,10 +182,18 @@ const IngestData: React.FC<IngestDataProps> = ({
 
   const handleAddToGraph = async (item: DatabaseItem) => {
     console.log('Add to Graph clicked for item:', item);
-    
+
     try {
       setIsIngesting(true);
-      const response = await fetch('https://n8n.paulserver.dpdns.org/webhook/perseus/ingest', {
+
+      // Determine the appropriate webhook endpoint based on the item's source
+      const webhookEndpoint = item.source === 'opencontext'
+        ? 'https://n8n.paulserver.dpdns.org/webhook/opencontext/addtograph'
+        : 'https://n8n.paulserver.dpdns.org/webhook/perseus/ingest';
+
+      console.log(`Sending item to ${item.source} webhook:`, webhookEndpoint);
+
+      const response = await fetch(webhookEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -31,13 +31,6 @@ const QueryPanel: React.FC<QueryPanelProps> = ({
     onActiveTabChange('aql');
   }, [onActiveTabChange]);
 
-  const handleUseAqlQuery = () => {
-    if (detectedAqlQuery) {
-      // This will be handled by the QueryInterface component
-      onActiveTabChange('aql');
-    }
-  };
-
   const handleQueryUsed = () => {
     setDetectedAqlQuery(null);
   };

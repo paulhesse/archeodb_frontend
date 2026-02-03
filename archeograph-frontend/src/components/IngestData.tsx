@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Rectangle, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
 
 interface DatabaseSource {
   id: string;
@@ -25,7 +24,7 @@ interface IngestDataProps {
 
 const IngestData: React.FC<IngestDataProps> = ({ 
   onAddToGraph, 
-  onItemSelect, 
+  onItemSelect: _onItemSelect, 
   onResultsReceived,
   selectedItem: propSelectedItem 
 }) => {
@@ -84,18 +83,6 @@ const IngestData: React.FC<IngestDataProps> = ({
       // Process each selected source individually
       for (const sourceId of selectedSources) {
         if (sourceId === 'perseus' || sourceId === 'opencontext' || sourceId === 'arachne') {
-<task_progress>
-- [x] Analyze the query interface and data source selection logic
-- [x] Examine how results from different sources are combined
-- [x] Identify the root cause of the issue
-- [x] Implement a fix for the problem
-- [x] Update parsing logic for new unified data format
-- [x] Fix result count calculation
-- [x] Test the solution
-- [x] Investigate result accumulation issue
-- [x] Fix result clearing between queries
-- [ ] Handle both single and multiple source scenarios correctly
-</task_progress>
           const isPerseus = sourceId === 'perseus';
           const isOpenContext = sourceId === 'opencontext';
           const sourceName = isPerseus ? 'Perseus' : isOpenContext ? 'Open Context' : 'Arachne';
@@ -218,12 +205,6 @@ const IngestData: React.FC<IngestDataProps> = ({
     }
   };
 
-  const handleItemSelect = (item: DatabaseItem) => {
-    setSelectedItem(item);
-    setActiveTab('details');
-    onItemSelect(item);
-  };
-
   // Internal component to handle map events
   const MapEvents = ({ onBoundsChange }: { onBoundsChange: (bounds: [number, number, number, number]) => void }) => {
     const map = useMapEvents({
@@ -251,8 +232,6 @@ const IngestData: React.FC<IngestDataProps> = ({
 
     return null;
   };
-
-  const checkedSources = databaseSources.filter(source => source.checked);
 
   return (
     <div className="space-y-2 h-full flex flex-col">

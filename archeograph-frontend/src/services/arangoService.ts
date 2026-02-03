@@ -38,7 +38,10 @@ interface QueryError {
 class ArangoService {
   private baseUrl: string;
 
-  constructor(baseUrl: string = 'https://n8n.paulserver.dpdns.org/webhook/api/query_arango') {
+  constructor(
+    baseUrl: string = import.meta.env.VITE_ARANGO_URL ||
+      'https://n8n.paulserver.dpdns.org/webhook/api/query_arango'
+  ) {
     this.baseUrl = baseUrl;
   }
 

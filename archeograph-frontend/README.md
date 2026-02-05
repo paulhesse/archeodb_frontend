@@ -1,3 +1,15 @@
+# GitHub/Docker Commands
+git pull – holt aktuellste Version von GitHub
+docker compose build – verpackt den Code in Docker Image
+docker compose up -d – startet Docker Container
+docker compose down – stoppt Docker Container
+git add . – erfasst alle Änderungen im Git
+git commit -m "Beschreibung der Änderungen" – fügt Änderungen Git hinzu
+git push – lädt aktuellsten Stand auf GitHub hoch 
+
+für Development muss nicht Docker verwendet werden man kann auch npm verwendet werden:
+npm run dev –
+
 # ArchaeoGraph Frontend
 
 A modern, interactive frontend for the ArchaeoGraph knowledge graph system built on CIDOC CRM standards.

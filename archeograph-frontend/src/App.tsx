@@ -16,7 +16,7 @@ const App: React.FC = () => {
   const [_hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [_rawResponse, setRawResponse] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'aql' | 'node' | 'ai'>('aql');
-  const [activeMainTab, setActiveMainTab] = useState<'ingest' | 'explore' | 'project'>('explore');
+  const [activeMainTab, setActiveMainTab] = useState<'ingest' | 'explore' | 'project'>('project');
   const [selectedDatabaseItem, setSelectedDatabaseItem] = useState<any>(null);
   const [databaseResults, setDatabaseResults] = useState<Record<string, any[]>>({});
 

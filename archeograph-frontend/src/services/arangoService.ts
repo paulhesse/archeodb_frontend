@@ -40,7 +40,7 @@ class ArangoService {
 
   constructor(
     baseUrl: string = import.meta.env.VITE_ARANGO_URL ||
-      'https://n8n.paulserver.dpdns.org/webhook/api/query_arango'
+      'https://n8n_v2.paulserver.dpdns.org/webhook/api/query_arango'
   ) {
     this.baseUrl = baseUrl;
   }

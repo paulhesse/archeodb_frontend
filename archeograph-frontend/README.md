@@ -73,7 +73,7 @@ archeograph-frontend/
 
 The frontend is configured to use your n8n webhook endpoint:
 ```
-https://n8n.paulserver.dpdns.org/webhook-test/api/query_arango
+https://n8n_v2.paulserver.dpdns.org/webhook-test/api/query_arango
 ```
 
 To change the API endpoint, modify the `baseUrl` parameter in `src/services/arangoService.ts`.
@@ -103,7 +103,7 @@ open archeograph-frontend/test-frontend.html
 
 **The test page now includes full functionality:**
 
-- ✅ **Real API Calls**: Connects to your n8n endpoint (`https://n8n.paulserver.dpdns.org/webhook-test/api/query_arango`)
+- ✅ **Real API Calls**: Connects to your n8n endpoint (`https://n8n_v2.paulserver.dpdns.org/webhook-test/api/query_arango`)
 - ✅ **Interactive Graph Visualization**: Uses Vis.js to display nodes and edges
 - ✅ **Node Details**: Click on nodes to see detailed information
 - ✅ **CIDOC CRM Coloring**: Nodes are colored by their entity type

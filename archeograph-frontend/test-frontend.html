@@ -204,7 +204,7 @@
 
         // Call the actual API endpoint
         console.log('Executing query:', query);
-        const response = await fetch('https://n8n.paulserver.dpdns.org/webhook-test/api/query_arango', {
+        const response = await fetch('https://n8n_v2.paulserver.dpdns.org/webhook-test/api/query_arango', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -411,7 +411,7 @@
 
     // Add some example data visualization
     console.log('ArchaeoGraph frontend loaded successfully!');
-    console.log('API Endpoint:', 'https://n8n.paulserver.dpdns.org/webhook-test/api/query_arango');
+    console.log('API Endpoint:', 'https://n8n_v2.paulserver.dpdns.org/webhook-test/api/query_arango');
   </script>
 </body>
 </html>

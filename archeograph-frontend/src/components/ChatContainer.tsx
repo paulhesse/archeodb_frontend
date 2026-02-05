@@ -77,7 +77,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ onAqlQueryDetected }) => 
       // Only initialize chat if it doesn't already exist to preserve state
       if (chatRef.current.children.length === 0) {
         createChat({
-          webhookUrl: 'https://n8n.paulserver.dpdns.org/webhook/11608553-f847-445d-85c9-08002aaa4a3a/chat',
+          webhookUrl: 'https://n8n_v2.paulserver.dpdns.org/webhook/11608553-f847-445d-85c9-08002aaa4a3a/chat',
           target: '#n8n-chat',
           mode: 'fullscreen',
           showWelcomeScreen: false,

@@ -87,10 +87,10 @@ const App: React.FC = () => {
         <div className="max-w-8xl mx-auto px-4 py-4 flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              ArchaeoGraph
+              Digging the Digital
             </h1>
             <p className="text-xs text-slate-500">
-              CIDOC CRM Knowledge Graph explorer
+              Resarch Tool for Archaeological Data
             </p>
           </div>
 

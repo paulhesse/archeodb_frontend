@@ -87,10 +87,10 @@ const IngestData: React.FC<IngestDataProps> = ({
           const isOpenContext = sourceId === 'opencontext';
           const sourceName = isPerseus ? 'Perseus' : isOpenContext ? 'Open Context' : 'Arachne';
           const endpoint = isPerseus
-            ? 'https://n8n.paulserver.dpdns.org/webhook/perseus/search'
+            ? 'https://n8n_v2.paulserver.dpdns.org/webhook/perseus/search'
             : isOpenContext
-              ? 'https://n8n.paulserver.dpdns.org/webhook/opencontext/search'
-              : 'https://n8n.paulserver.dpdns.org/webhook/3feff6fc-49e5-407d-91eb-9ceeed08aac7';
+              ? 'https://n8n_v2.paulserver.dpdns.org/webhook/opencontext/search'
+              : 'https://n8n_v2.paulserver.dpdns.org/webhook/3feff6fc-49e5-407d-91eb-9ceeed08aac7';
 
           console.log(`Sending request to ${sourceName} webhook...`);
           try {
@@ -175,8 +175,8 @@ const IngestData: React.FC<IngestDataProps> = ({
 
       // Determine the appropriate webhook endpoint based on the item's source
       const webhookEndpoint = item.source === 'opencontext'
-        ? 'https://n8n.paulserver.dpdns.org/webhook/opencontext/addtograph'
-        : 'https://n8n.paulserver.dpdns.org/webhook/perseus/ingest';
+        ? 'https://n8n_v2.paulserver.dpdns.org/webhook/opencontext/addtograph'
+        : 'https://n8n_v2.paulserver.dpdns.org/webhook/perseus/ingest';
 
       console.log(`Sending item to ${item.source} webhook:`, webhookEndpoint);
 

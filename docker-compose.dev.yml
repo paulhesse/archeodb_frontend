@@ -8,5 +8,5 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_ARANGO_URL=https://n8n.paulserver.dpdns.org/webhook/api/query_arango
+      - VITE_ARANGO_URL=https://n8n_v2.paulserver.dpdns.org/webhook/api/query_arango
     command: npm run dev -- --host

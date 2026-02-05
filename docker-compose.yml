@@ -6,5 +6,5 @@ services:
     ports:
       - "8080:80"
     environment:
-      - VITE_ARANGO_URL=https://n8n.paulserver.dpdns.org/webhook/api/query_arango
+      - VITE_ARANGO_URL=https://n8n_v2.paulserver.dpdns.org/webhook/api/query_arango
     restart: always

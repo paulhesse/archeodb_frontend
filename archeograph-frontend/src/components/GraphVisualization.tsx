@@ -60,6 +60,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       },
       shape: 'circle',
       size: 25,
+      borderWidth: 2,
     }));
 
     // Convert edges to vis format
@@ -73,7 +74,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       color: {
         inherit: 'both',
       },
-      width: 0.15,
+      width: 2,
       arrows: {
         to: {
           enabled: true,
@@ -90,6 +91,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       {
         nodes: {
           shape: 'circle',
+          borderWidth: 2,
           scaling: {
             min: 10,
             max: 30,
@@ -101,7 +103,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
         },
         edges: {
           color: { inherit: 'both' },
-          width: 0.15,
+          width: 2,
           smooth: {
             enabled: true,
             type: 'continuous',

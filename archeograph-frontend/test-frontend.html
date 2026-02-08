@@ -237,6 +237,7 @@
               color: getNodeColor(node.type),
               shape: 'circle',
               size: 25,
+              borderWidth: 2,
             });
           });
         }
@@ -253,7 +254,7 @@
                 color: '#9ca3af',
                 highlight: '#6b7280',
               },
-              width: 1,
+              width: 2,
             });
           });
         }
@@ -269,14 +270,15 @@
                 size: 12,
                 face: 'Inter',
               },
-              borderWidth: 1,
-              borderWidthSelected: 2,
+              borderWidth: 2,
+              borderWidthSelected: 4,
               scaling: {
                 min: 10,
                 max: 30,
               },
             },
             edges: {
+              width: 2,
               font: {
                 size: 10,
                 face: 'Inter',

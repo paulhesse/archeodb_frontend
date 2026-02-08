@@ -28,10 +28,107 @@ const QueryInterface: React.FC<QueryInterfaceProps> = ({
       }
     }
   }, [initialQuery, query, onQueryUsed]);
-  const [queryExamples] = useState<string[]>([
-    'FOR v, e, p IN 1..2 ANY "root" GRAPH "cidoc_graph" RETURN {nodes: [v], edges: [e]}',
-    'FOR node IN cidoc_graph RETURN node',
-    'FOR v, e IN 1..1 OUTBOUND "E22_Artifact_001" GRAPH "cidoc_graph" RETURN {v, e}',
+  const [queryExamples] = useState<{ label: string; query: string }[]>([
+    {
+      label: 'Show whole Graph',
+      query: `/** 
+ * 1. Collect a sample of nodes from ALL valid collections 
+ * (Removed E1_CRM_Entity)
+ */
+LET seed_nodes = UNION(
+  (FOR x IN E22_HumanMadeObject LIMIT 10 RETURN x),
+  (FOR x IN E33_LinguisticObject LIMIT 10 RETURN x),
+  (FOR x IN E36_VisualItem LIMIT 10 RETURN x),
+  (FOR x IN E53_Place LIMIT 10 RETURN x),
+  (FOR x IN E39_Actor LIMIT 10 RETURN x),
+  (FOR x IN E5_Event LIMIT 10 RETURN x),
+  (FOR x IN E52_TimeSpan LIMIT 10 RETURN x),
+  (FOR x IN E55_Type LIMIT 10 RETURN x),
+  (FOR x IN E42_Identifier LIMIT 10 RETURN x)
+)
+
+/** 
+ * 2. Find edges connected to these nodes using valid Traversal syntax 
+ */
+LET edges_raw = (
+  FOR n IN seed_nodes
+    FOR neighbor, edge IN 1..1 ANY n._id
+      P1_is_identified_by,
+      P2_has_type,
+      P4_has_time_span,
+      P7_took_place_at,
+      P45_consists_of,
+      P53_has_former_or_current_location,
+      P70_documents,
+      P94i_was_created_by,
+      P108i_was_produced_by,
+      P128_carries,
+      P138i_has_representation,
+      P148_has_component
+    RETURN edge
+)
+
+/** 
+ * 3. Deduplicate edges 
+ */
+LET unique_edges = (
+  FOR e IN edges_raw
+    RETURN DISTINCT e
+)
+
+/** 
+ * 4. Collect all Node IDs involved (Start nodes + From/To of edges)
+ * We do this to ensure we have the visual data for nodes found via traversal
+ * that weren't in the initial seed list.
+ */
+LET all_node_ids = UNIQUE(
+  UNION(
+    seed_nodes[*]._id,
+    unique_edges[*]._from,
+    unique_edges[*]._to
+  )
+)
+
+/** 
+ * 5. Fetch full node documents safely using DOCUMENT() 
+ */
+LET final_nodes = (
+  FOR id IN all_node_ids
+    LET doc = DOCUMENT(id)
+    FILTER doc != null
+    RETURN doc
+)
+
+RETURN {
+  nodes: (
+    FOR n IN final_nodes
+    RETURN {
+      id: n._id,
+      label: n.label || n.title || n.name || 'Unnamed',
+      type: PARSE_IDENTIFIER(n._id).collection,
+      properties: UNSET(n, 'vector_data')
+    }
+  ),
+  edges: (
+    FOR e IN unique_edges
+    RETURN {
+      id: e._id,
+      from: e._from,
+      to: e._to,
+      label: PARSE_IDENTIFIER(e._id).collection,
+      properties: e
+    }
+  )
+}`,
+    },
+    {
+      label: 'Ex 2',
+      query: 'FOR node IN cidoc_graph RETURN node',
+    },
+    {
+      label: 'Ex 3',
+      query: 'FOR v, e IN 1..1 OUTBOUND "E22_Artifact_001" GRAPH "cidoc_graph" RETURN {v, e}',
+    },
   ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,10 +161,10 @@ const QueryInterface: React.FC<QueryInterfaceProps> = ({
             <button
               key={index}
               type="button"
-              onClick={() => handleExampleClick(example)}
+              onClick={() => handleExampleClick(example.query)}
               className="rounded bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-200"
             >
-              Ex {index + 1}
+              {example.label}
             </button>
           ))}
         </div>
